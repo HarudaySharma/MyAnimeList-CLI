@@ -33,7 +33,8 @@ func FetchAnimeList(p FetchAnimeListParams) *types.NativeAnimeList {
 	}
 	if p.Offset > MAX_OFFSET {
 		p.Offset = DEFAULT_OFFSET
-	}
+    }
+
 
 	// create a client
 	client := http.Client{}
