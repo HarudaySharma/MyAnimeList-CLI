@@ -1,18 +1,29 @@
 package types
-/* node": {
 
-    "id": 21,
-    "title": "One Piece",
-    "main_picture": 
-
-    {
-        "medium": "https://myanimelist.cdn-dena.com/images/anime/6/73245.jpg",
-        "large": "https://myanimelist.cdn-dena.com/images/anime/6/73245l.jpg"
-    }
-
-} */
-
-type AnimeList struct {
-    data []int
+type MALAnimeList struct {
+	Data []struct {
+		Node struct {
+			Id          int    `json:"id"`
+			Title       string `json:"title"`
+			MainPicture struct {
+				Large  string `json:"large"`
+				Medium string `json:"medium"`
+			} `json:"main_picture"`
+		} `json:"node"`
+	} `json:"data"`
+	Paging struct {
+		Next string `json:"next"`
+	} `json:"paging"`
 }
 
+type AnimeListDataNode struct {
+	Id    int    `json:"id"`
+	Title string `json:"title"`
+}
+
+type NativeAnimeList struct {
+	Data []AnimeListDataNode `json:"data"`
+	Paging struct {
+		Next string `json:"next"`
+	} `json:"paging"`
+}

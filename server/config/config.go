@@ -15,7 +15,8 @@ var C = struct {
 }
 
 func LoadConfig() {
-	err := godotenv.Load("./../../.env")
+	//err := godotenv.Load("./../../.env") // for testing
+    err := godotenv.Load(".env")
 	if err != nil {
 		log.Panic("Error loading .env file")
 	}

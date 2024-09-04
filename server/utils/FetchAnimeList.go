@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"learning/server/config"
+	"learning/server/types"
 	"log"
 	"net/http"
 )
@@ -11,29 +12,27 @@ import (
 type FetchAnimeListParams struct {
 	Query  string
 	Limit  int8
-	Offset int
+	Offset int8
 	Fields string
 }
 
-type RES struct {
-	Data []struct {
-		Node struct {
-			Id          int    `json:"id"`
-			Title       string `json:"title"`
-			MainPicture struct {
-				Large  string `json:"large"`
-				Medium string `json:"medium"`
-			} `json:"main_picture"`
-		} `json:"node"`
-	} `json:"data"`
-	Paging struct {
-		Next string `json:"next"`
-	} `json:"paging"`
-}
+func FetchAnimeList(p FetchAnimeListParams) *types.NativeAnimeList {
+	const DEFAULT_LIMIT = 10
+	const DEFAULT_OFFSET = 0
+	const MAX_LIMIT = 100
+	const MAX_OFFSET = 99
 
-func FetchAnimeList(p FetchAnimeListParams) RES {
 	if p.Query == "" {
-		return RES{}
+		return &types.NativeAnimeList{}
+	}
+	if p.Limit == 0 {
+		p.Limit = DEFAULT_LIMIT
+	}
+	if p.Limit > MAX_LIMIT {
+		p.Limit = MAX_LIMIT
+	}
+	if p.Offset > MAX_OFFSET {
+		p.Offset = DEFAULT_OFFSET
 	}
 
 	// create a client
@@ -52,10 +51,27 @@ func FetchAnimeList(p FetchAnimeListParams) RES {
 		log.Fatalf("ERROR in FetchAnimeList fetching from MAL API \n %v", err)
 	}
 
-	ret := RES{}
+	ret := types.MALAnimeList{}
 	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
 		log.Fatalf("ERROR in FetchAnimeList decoding json body \n %v", err)
 	}
 
-	return ret
+	defer res.Body.Close()
+
+	return convertToNativeAnimeListType(&ret)
+}
+
+func convertToNativeAnimeListType(data *types.MALAnimeList) *types.NativeAnimeList {
+	convertedData := types.NativeAnimeList{}
+
+	for _, v := range data.Data {
+		node := types.AnimeListDataNode{
+			Id:    v.Node.Id,
+			Title: v.Node.Title,
+		}
+		convertedData.Data = append(convertedData.Data, node)
+	}
+	convertedData.Paging = data.Paging
+
+	return &convertedData
 }
