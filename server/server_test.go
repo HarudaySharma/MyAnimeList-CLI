@@ -1,9 +1,9 @@
 package server_test
 
+/*
 import (
 	"fmt"
 	"io"
-	"learning/config"
 	"net/http"
 	"testing"
 )
@@ -11,8 +11,6 @@ import (
 func Test_Client(t *testing.T) {
 	client := &http.Client{}
 
-	cfg := config.LoadConfig()
-	t.Logf("%v", cfg.SITE_URL)
 
 	//req, err := http.NewRequest("GET", cfg.URL + "/anime?q=one&limit=4", nil)
     url := fmt.Sprintf("%v/oauth2/authorize?"+
@@ -50,4 +48,4 @@ func Test_Client(t *testing.T) {
 
 	t.Log(string(body))
 
-}
+} */

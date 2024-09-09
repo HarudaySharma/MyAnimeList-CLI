@@ -3,7 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"learning/server/config"
 	"log"
 	"net/http"
@@ -16,9 +15,25 @@ type FetchAnimeListParams struct {
 	Fields string
 }
 
-func FetchAnimeList(p FetchAnimeListParams) any {
+type RES struct {
+	Data []struct {
+		Node struct {
+			Id          int    `json:"id"`
+			Title       string `json:"title"`
+			MainPicture struct {
+				Large  string `json:"large"`
+				Medium string `json:"medium"`
+			} `json:"main_picture"`
+		} `json:"node"`
+	} `json:"data"`
+	Paging struct {
+		Next string `json:"next"`
+	} `json:"paging"`
+}
+
+func FetchAnimeList(p FetchAnimeListParams) RES {
 	if p.Query == "" {
-		return nil
+		return RES{}
 	}
 
 	// create a client
@@ -30,23 +45,17 @@ func FetchAnimeList(p FetchAnimeListParams) any {
 		p.Limit,
 		p.Offset,
 	)
-    req := CreateHttpRequest("GET", url)
+	req := CreateHttpRequest("GET", url)
 
 	res, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("ERROR in FetchAnimeList fetching from MAL API \n %v", err)
 	}
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		log.Fatalf("ERROR in FetchAnimeList reading body \n %v", err)
+	ret := RES{}
+	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+		log.Fatalf("ERROR in FetchAnimeList decoding json body \n %v", err)
 	}
 
-
-    log.Println(string(body))
-    var ret any;
-    if err := json.Unmarshal(body, ret); err != nil {
-        log.Fatal(err)
-    }
 	return ret
 }

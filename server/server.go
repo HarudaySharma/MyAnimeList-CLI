@@ -7,12 +7,11 @@ import (
 	"net/http"
 )
 
-
 func StartServer(port string) {
 	log.Printf("server running on http://localhost:%s", port)
 
 	// create request routesz
-    http.HandleFunc("/api/anime-list", handlers.GETAnimeList)
+	http.HandleFunc("/api/anime-list", handlers.GETAnimeList)
 
 	// SERVER
 	s := http.Server{
@@ -20,6 +19,6 @@ func StartServer(port string) {
 		Handler: nil,
 	}
 
-    config.LoadConfig()
+	config.LoadConfig()
 	log.Fatal(s.ListenAndServe())
 }
