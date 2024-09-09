@@ -1,7 +1,6 @@
 package server
 
 import (
-	"learning/server/config"
 	"learning/server/handlers"
 	"log"
 	"net/http"
@@ -13,12 +12,14 @@ func StartServer(port string) {
 	// create request routesz
 	http.HandleFunc("/api/anime-list", handlers.GETAnimeList)
 
+    // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
+	http.HandleFunc("/api/anime/", handlers.GETAnimeDetails)
+
 	// SERVER
 	s := http.Server{
 		Addr:    ":" + port,
 		Handler: nil,
 	}
 
-	config.LoadConfig()
 	log.Fatal(s.ListenAndServe())
 }

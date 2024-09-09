@@ -1,5 +1,10 @@
 package server_test
 
+import (
+	"net/http"
+	"testing"
+)
+
 /*
 import (
 	"fmt"
@@ -49,3 +54,12 @@ func Test_Client(t *testing.T) {
 	t.Log(string(body))
 
 } */
+
+func Test_Routes(t *testing.T) {
+    url := "http://localhost:3000/api/anime";
+    res, err := http.Get(url)
+    if err != nil {
+        t.Fatal(err)
+    }
+    t.Log(res)
+}

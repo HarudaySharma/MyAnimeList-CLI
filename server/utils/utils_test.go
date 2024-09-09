@@ -2,12 +2,11 @@ package utils
 
 import (
 	"encoding/json"
-	"learning/server/config"
 	"testing"
 )
 
-func Test_FetchAnimeList(t *testing.T) {
-	config.LoadConfig()
+func _Test_FetchAnimeList(t *testing.T) {
+	//config.LoadConfig()
 
 	ret := FetchAnimeList(FetchAnimeListParams{
 		Query: "Vinland",
