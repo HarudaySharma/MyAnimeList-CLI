@@ -12,7 +12,7 @@ func StartServer(port string) {
 	log.Printf("server running on http://localhost:%s", port)
 
 	// create request routesz
-    http.HandleFunc("/anime-list", handlers.GETAnimeList)
+    http.HandleFunc("/api/anime-list", handlers.GETAnimeList)
 
 	// SERVER
 	s := http.Server{

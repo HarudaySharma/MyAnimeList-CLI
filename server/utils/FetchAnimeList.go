@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"learning/server/config"
@@ -15,7 +16,7 @@ type FetchAnimeListParams struct {
 	Fields string
 }
 
-func FetchAnimeList(p FetchAnimeListParams) []byte {
+func FetchAnimeList(p FetchAnimeListParams) any {
 	if p.Query == "" {
 		return nil
 	}
@@ -23,19 +24,13 @@ func FetchAnimeList(p FetchAnimeListParams) []byte {
 	// create a client
 	client := http.Client{}
 
-	url := fmt.Sprintf("%s/q=%s&limit=%v&offset=%v&client_auth=%s",
+	url := fmt.Sprintf("%s/anime?q=%s&limit=%v&offset=%v",
 		config.C.MAL_API_URL,
 		p.Query,
 		p.Limit,
 		p.Offset,
-        config.C.CLIENT_ID,
 	)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		log.Fatalf("ERROR in FetchAnimeList \n %v", err)
-		return nil
-	}
+    req := CreateHttpRequest("GET", url)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -47,5 +42,11 @@ func FetchAnimeList(p FetchAnimeListParams) []byte {
 		log.Fatalf("ERROR in FetchAnimeList reading body \n %v", err)
 	}
 
-	return body
+
+    log.Println(string(body))
+    var ret any;
+    if err := json.Unmarshal(body, ret); err != nil {
+        log.Fatal(err)
+    }
+	return ret
 }
