@@ -2,8 +2,8 @@
 
 #### all the public routes for MAL_CLI;
 
-- [ ] GET anime list **IN PROGRESS**
-- [ ] GET anime details
+- [x] GET anime list
+- [ ] GET anime details **IN PROGRESS**
 - [ ] GET anime ranking
 - [ ] GET seasonal anime
 
@@ -20,3 +20,5 @@
     - on selecting one of them, (if options are given) they will get the details of the selection
 
 
+#### Current 
+- test the GETAnimeList route

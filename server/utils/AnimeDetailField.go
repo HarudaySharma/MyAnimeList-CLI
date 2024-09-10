@@ -1,6 +1,5 @@
 package utils
 
-
 type AnimeDetailField string
 
 const (
@@ -51,14 +50,14 @@ func AllFields() []AnimeDetailField {
 
 func ParseDetailsField(fields []string) ([]AnimeDetailField, bool) {
 	parsedFields := make([]AnimeDetailField, 0)
-    invalidFieldEncountered := false
+	invalidFieldEncountered := false
 	for _, field := range fields {
 		f, exists := allFieldsMap[field]
 		if !exists {
-            invalidFieldEncountered = true
+			invalidFieldEncountered = true
 			continue
 			// NOT SURE
-			// should just ignore the fields that are invalid 
+			// should just ignore the fields that are invalid
 			// return []AnimeDetailField{}, errors.New(fmt.Sprintf("invalid field {%s}", field))
 		}
 		parsedFields = append(parsedFields, f)
@@ -70,7 +69,7 @@ func ParseDetailsField(fields []string) ([]AnimeDetailField, bool) {
 func init() {
 	basicDetailFields = []AnimeDetailField{
 		Id, AlternativeTitles, StartDate, EndDate, Synopsis, Rank,
-		Popularity, NumListUsers, NumScoringUsers, Nsfw, CreatedAt, UpdatedAt,
+		Popularity, NumListUsers, NumScoringUsers, CreatedAt, UpdatedAt,
 		Status, Genres, NumEpisodes, StartSeason, Source,
 		AverageEpisodeDuration, Rating, RelatedAnime,
 		Studios, Statistics,

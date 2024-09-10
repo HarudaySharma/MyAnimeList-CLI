@@ -66,7 +66,7 @@ func convertToNativeAnimeListType(data *types.MALAnimeList) *types.NativeAnimeLi
 
 	for _, v := range data.Data {
 		node := types.AnimeListDataNode{
-			Id:    v.Node.Id,
+			ID:    v.Node.ID,
 			Title: v.Node.Title,
 		}
 		convertedData.Data = append(convertedData.Data, node)

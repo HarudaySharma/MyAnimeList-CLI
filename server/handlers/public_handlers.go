@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"learning/server/types"
 	"learning/server/utils"
 	"log"
 	"net/http"
@@ -115,6 +116,7 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 
 	// ****QUERY PARAMS****
 
+    var data types.MALAnimeDetails;
     detailType := r.URL.Query().Get("detailType")
 	switch strings.ToLower(detailType) {
 
@@ -123,10 +125,10 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 		return
 
 	case "basic":
-		utils.FetchAnimeDetails(animeId, utils.BasicDetailFields())
+		data = utils.FetchAnimeDetails(animeId, utils.BasicDetailFields())
 
 	case "advanced":
-		utils.FetchAnimeDetails(animeId, utils.AllFields())
+		data = utils.FetchAnimeDetails(animeId, utils.AllFields())
 
 	case "custom":
 		// get the "custom" query param
@@ -137,11 +139,12 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 		if len(parsedFields) == 0 && invalidFound {
             fmt.Fprint(w, "{\"error\": \"invalid custom fields\"")
 		}
-		utils.FetchAnimeDetails(animeId, parsedFields)
+		data = utils.FetchAnimeDetails(animeId, parsedFields)
 
 	default:
 		fmt.Fprint(w, "{\"error\": \"invalid detailType\"")
 		return
 	}
 
+    fmt.Fprint(w, data)
 }
