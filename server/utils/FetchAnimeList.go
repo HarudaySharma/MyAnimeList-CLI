@@ -3,8 +3,8 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"learning/server/config"
-	"learning/server/types"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
 	"log"
 	"net/http"
 )

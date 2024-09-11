@@ -1,4 +1,4 @@
-module learning
+module github.com/HarudaySharma/MyAnimeList-CLI
 
 go 1.22.2
 

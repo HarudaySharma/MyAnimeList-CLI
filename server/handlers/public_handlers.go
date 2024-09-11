@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"learning/server/utils"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
 	"log"
 	"net/http"
 	"strconv"

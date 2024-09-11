@@ -1,7 +1,7 @@
 package main
 
 import (
-	"learning/server"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server"
 	"log"
 )
 

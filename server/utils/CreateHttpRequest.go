@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"learning/server/config"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
 	"log"
 	"net/http"
 )
