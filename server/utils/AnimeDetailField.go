@@ -4,6 +4,7 @@ type AnimeDetailField string
 
 const (
 	Id                     AnimeDetailField = "id"
+    Title                  AnimeDetailField = "title"
 	MainPicture            AnimeDetailField = "main_picture"
 	AlternativeTitles      AnimeDetailField = "alternative_titles"
 	StartDate              AnimeDetailField = "start_date"
@@ -37,15 +38,20 @@ const (
 )
 
 var basicDetailFields []AnimeDetailField
-var allFields []AnimeDetailField
+var advancedDetailFields []AnimeDetailField
+var everyDetailFields []AnimeDetailField
 var allFieldsMap map[string]AnimeDetailField
 
 func BasicDetailFields() []AnimeDetailField {
 	return basicDetailFields
 }
 
-func AllFields() []AnimeDetailField {
-	return allFields
+func AdvancedDetailFields() []AnimeDetailField {
+	return advancedDetailFields
+}
+
+func EveryDetailField() []AnimeDetailField {
+	return everyDetailFields
 }
 
 func ParseDetailsField(fields []string) ([]AnimeDetailField, bool) {
@@ -68,15 +74,21 @@ func ParseDetailsField(fields []string) ([]AnimeDetailField, bool) {
 
 func init() {
 	basicDetailFields = []AnimeDetailField{
-		Id, AlternativeTitles, StartDate, EndDate, Synopsis, Rank,
-		Popularity, NumListUsers, NumScoringUsers, CreatedAt, UpdatedAt,
+		Id, AlternativeTitles, StartDate, Synopsis, Rank,
+		CreatedAt, Status, Genres, NumEpisodes, StartSeason,
+		AverageEpisodeDuration, Rating,
+	}
+
+	advancedDetailFields = []AnimeDetailField{
+		Id, AlternativeTitles, StartDate, Synopsis, Rank,
+		NumListUsers, NumScoringUsers, CreatedAt,
 		Status, Genres, NumEpisodes, StartSeason, Source,
 		AverageEpisodeDuration, Rating, RelatedAnime,
 		Studios, Statistics,
 	}
 
-	allFields = []AnimeDetailField{
-		Id, MainPicture, AlternativeTitles, StartDate, EndDate, Synopsis, Mean, Rank,
+	everyDetailFields = []AnimeDetailField{
+		Id, Title, MainPicture, AlternativeTitles, StartDate, EndDate, Synopsis, Mean, Rank,
 		Popularity, NumListUsers, NumScoringUsers, Nsfw, CreatedAt, UpdatedAt, MediaType,
 		Status, Genres, MyListStatus, NumEpisodes, StartSeason, Broadcast, Source,
 		AverageEpisodeDuration, Rating, Pictures, Background, RelatedAnime, RelatedManga,
@@ -85,7 +97,7 @@ func init() {
 
 	allFieldsMap = make(map[string]AnimeDetailField)
 
-	for _, f := range allFields {
+	for _, f := range everyDetailFields {
 		allFieldsMap[string(f)] = f
 	}
 }

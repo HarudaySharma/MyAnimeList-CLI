@@ -114,10 +114,9 @@ type AnimeListDataNode struct {
 	Title string `json:"title"`
 }
 
-
 type NativeRecommendation struct {
 	Node               AnimeListDataNode `json:"node"`
-	NumRecommendations int         `json:"num_recommendations"`
+	NumRecommendations int               `json:"num_recommendations"`
 }
 
 type NativeAnimeList struct {
@@ -134,29 +133,29 @@ type NativeRelatedAnime struct {
 }
 
 type NativeAnimeDetails struct {
-	AlternativeTitles      AlternativeTitles     `json:"alternative_titles"`
-	AverageEpisodeDuration int                   `json:"average_episode_duration"`
-	Background             string                `json:"background"`
-	Broadcast              Broadcast             `json:"broadcast"`
-	CreatedAt              time.Time             `json:"created_at"`
-	EndDate                string                `json:"end_date"`
-	Genres                 []Genre               `json:"genres"`
-	ID                     int                   `json:"id"`
-	MainPicture            Picture               `json:"main_picture"`
-	Mean                   float64               `json:"mean"`
-	MediaType              string                `json:"media_type"`
-	NSFW                   string                `json:"nsfw"`
-	NumEpisodes            int                   `json:"num_episodes"`
-	NumListUsers           int                   `json:"num_list_users"`
-	NumScoringUsers        int                   `json:"num_scoring_users"`
-	Pictures               []Picture             `json:"pictures"`
-	Popularity             int                   `json:"popularity"`
-	Rank                   int                   `json:"rank"`
-	Rating                 string                `json:"rating"`
-	Recommendations        []NativeRecommendation      `json:"recommendations"`
-	RelatedAnime           []NativeRelatedAnime `json:"related_anime"`
-	Source                 string                `json:"source"`
-	StartDate              string                `json:"start_date"`
+	AlternativeTitles      AlternativeTitles      `json:"alternative_titles"`
+	AverageEpisodeDuration int                    `json:"average_episode_duration"`
+	Background             string                 `json:"background"`
+	Broadcast              Broadcast              `json:"broadcast"`
+	CreatedAt              time.Time              `json:"created_at"`
+	EndDate                string                 `json:"end_date"`
+	Genres                 []Genre                `json:"genres"`
+	ID                     int                    `json:"id"`
+	MainPicture            Picture                `json:"main_picture"`
+	Mean                   float64                `json:"mean"`
+	MediaType              string                 `json:"media_type"`
+	NSFW                   string                 `json:"nsfw"`
+	NumEpisodes            int                    `json:"num_episodes"`
+	NumListUsers           int                    `json:"num_list_users"`
+	NumScoringUsers        int                    `json:"num_scoring_users"`
+	Pictures               []Picture              `json:"pictures"`
+	Popularity             int                    `json:"popularity"`
+	Rank                   int                    `json:"rank"`
+	Rating                 string                 `json:"rating"`
+	Recommendations        []NativeRecommendation `json:"recommendations"`
+	RelatedAnime           []NativeRelatedAnime   `json:"related_anime"`
+	Source                 string                 `json:"source"`
+	StartDate              string                 `json:"start_date"`
 	StartSeason            struct {
 		Season string `json:"season"`
 		Year   int    `json:"year"`
@@ -168,3 +167,58 @@ type NativeAnimeDetails struct {
 	Title      string     `json:"title"`
 	UpdatedAt  time.Time  `json:"updated_at"`
 }
+
+type NativeAnimeDetails_Basic struct {
+	AlternativeTitles      AlternativeTitles      `json:"alternative_titles"`
+	AverageEpisodeDuration int                    `json:"average_episode_duration"`
+	Broadcast              Broadcast              `json:"broadcast"`
+	CreatedAt              time.Time              `json:"created_at"`
+	EndDate                string                 `json:"end_date"`
+	Genres                 []Genre                `json:"genres"`
+	ID                     int                    `json:"id"`
+	MainPicture            Picture                `json:"main_picture"`
+	MediaType              string                 `json:"media_type"`
+	NumEpisodes            int                    `json:"num_episodes"`
+	Rank                   int                    `json:"rank"`
+	Rating                 string                 `json:"rating"`
+	Source                 string                 `json:"source"`
+	StartSeason            struct {
+		Season string `json:"season"`
+		Year   int    `json:"year"`
+	} `json:"start_season"`
+	Status     string     `json:"status"`
+	Synopsis   string     `json:"synopsis"`
+	Title      string     `json:"title"`
+}
+
+type NativeAnimeDetails_Advanced struct {
+	AlternativeTitles      AlternativeTitles      `json:"alternative_titles"`
+	AverageEpisodeDuration int                    `json:"average_episode_duration"`
+	Background             string                 `json:"background"`
+	Broadcast              Broadcast              `json:"broadcast"`
+	CreatedAt              time.Time              `json:"created_at"`
+	EndDate                string                 `json:"end_date"`
+	Genres                 []Genre                `json:"genres"`
+	ID                     int                    `json:"id"`
+	MainPicture            Picture                `json:"main_picture"`
+	MediaType              string                 `json:"media_type"`
+	NumEpisodes            int                    `json:"num_episodes"`
+	NumListUsers           int                    `json:"num_list_users"`
+	NumScoringUsers        int                    `json:"num_scoring_users"`
+	Rank                   int                    `json:"rank"`
+	Rating                 string                 `json:"rating"`
+	Recommendations        []NativeRecommendation `json:"recommendations"`
+	RelatedAnime           []NativeRelatedAnime   `json:"related_anime"`
+	Source                 string                 `json:"source"`
+	StartDate              string                 `json:"start_date"`
+	StartSeason            struct {
+		Season string `json:"season"`
+		Year   int    `json:"year"`
+	} `json:"start_season"`
+	Statistics Statistics `json:"statistics"`
+	Status     string     `json:"status"`
+	Studios    []Studio   `json:"studios"`
+	Synopsis   string     `json:"synopsis"`
+	Title      string     `json:"title"`
+}
+

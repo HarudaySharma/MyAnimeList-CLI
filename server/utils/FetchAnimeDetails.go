@@ -9,12 +9,6 @@ import (
 	"net/http"
 )
 
-// TODO:
-// - create a Enum such that user is in control of all the fields they want
-// - Parse the field value before fetching
-// - give users some default fields options or let them send custom fields
-// - Default Options: "BasicDetails", "AdvancedDetails", "EveryDetail", "Custom"
-
 func FetchAnimeDetails(animeId string, fields []AnimeDetailField) *types.NativeAnimeDetails {
 	client := http.Client{}
 
@@ -37,14 +31,12 @@ func FetchAnimeDetails(animeId string, fields []AnimeDetailField) *types.NativeA
 		log.Fatalf("ERROR in FetchAnimeDetails decoding json body \n %v", err)
 	}
 
-	/* body, _ := json.MarshalIndent(data, "", "\t")
-	log.Print(string(body)) */
+    defer res.Body.Close()
 
 	return convertToNativeAnimeDetailsType(&data)
 }
 
 func convertToNativeAnimeDetailsType(data *types.MALAnimeDetails) *types.NativeAnimeDetails {
-	log.Println(data)
 	nativeDetails := types.NativeAnimeDetails{
 		ID:                     data.ID,
 		AlternativeTitles:      data.AlternativeTitles,

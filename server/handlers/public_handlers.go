@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"learning/server/types"
 	"learning/server/utils"
 	"log"
 	"net/http"
@@ -11,21 +10,23 @@ import (
 	"strings"
 )
 
-// GET anime list
-// ROUTE: /api/anime/anime-list?q="query.."&limit="[1, 100]"&offset="[0, 99]"
+/*
+GET anime list
+  - ROUTE: /api/anime/anime-list?q="query.."&limit="[1, 100]"&offset="[0, 99]"
+*/
 func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 	log.Println("*****GETAnimeList Handler called*****")
 
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"")
+		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"}")
 		return
 	}
 
 	q := r.URL.Query()
 
 	if q.Get("q") == "" {
-		fmt.Fprint(w, "{\"error\": \"invalid query params (\"q\" not provided)}\"")
+		fmt.Fprint(w, "{\"error\": \"invalid query params (\"q\" not provided)\"}")
 		return
 	}
 
@@ -52,7 +53,7 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 		offset, err = strconv.Atoi(q.Get("offset"))
 		if err != nil {
 			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
-				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"offset\"[0,100)}\"")
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"offset\"[0,100)\"}")
 				return
 			}
 
@@ -81,14 +82,18 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// GET anime details
-// ROUTE: /api/anime/{animeId}?detailType="Basic"|"Advanced"|"Custom"&custom="....."
+/*
+GET anime details
+  - ROUTE: /api/anime/{animeId}?detailType="Basic"|"Advanced"|"Custom"&custom="....."
+  - if detailType is "custom" then the custom query param should be filled too
+  - Returns blank json object with id: 0 for invalid animeId
+*/
 func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	log.Println("*****GETAnimeDetails Handler called*****")
 
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"")
+		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"}")
 		return
 	}
 
@@ -116,19 +121,18 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 
 	// ****QUERY PARAMS****
 
-    var data types.MALAnimeDetails;
-    detailType := r.URL.Query().Get("detailType")
+	var data interface{}
+	detailType := r.URL.Query().Get("detailType")
 	switch strings.ToLower(detailType) {
 
 	case "":
-		fmt.Fprint(w, "{\"error\": \"detailType not specified\"")
-		return
+		data = utils.FetchAnimeDetails(animeId, utils.EveryDetailField())
 
 	case "basic":
 		data = utils.FetchAnimeDetails(animeId, utils.BasicDetailFields())
 
 	case "advanced":
-		data = utils.FetchAnimeDetails(animeId, utils.AllFields())
+		data = utils.FetchAnimeDetails(animeId, utils.AdvancedDetailFields())
 
 	case "custom":
 		// get the "custom" query param
@@ -137,14 +141,24 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 
 		parsedFields, invalidFound := utils.ParseDetailsField(fieldArr)
 		if len(parsedFields) == 0 && invalidFound {
-            fmt.Fprint(w, "{\"error\": \"invalid custom fields\"")
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprint(w, "{\"error\": \"invalid custom fields\"}")
+			return
 		}
 		data = utils.FetchAnimeDetails(animeId, parsedFields)
 
 	default:
-		fmt.Fprint(w, "{\"error\": \"invalid detailType\"")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "{\"error\": \"invalid detailType\"}")
 		return
 	}
 
-    fmt.Fprint(w, data)
+	jsonData, err := json.Marshal(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "{\"error\": \"JSON parsing failed\"}")
+		return
+	}
+
+	fmt.Fprint(w, string(jsonData))
 }

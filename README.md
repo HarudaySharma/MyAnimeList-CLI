@@ -3,8 +3,8 @@
 #### all the public routes for MAL_CLI;
 
 - [x] GET anime list
-- [ ] GET anime details **IN PROGRESS**
-- [ ] GET anime ranking
+- [x] GET anime details 
+- [ ] GET anime ranking **IN PROGRESS**
 - [ ] GET seasonal anime
 
 #### all the user routes for MAL_CLI;
@@ -21,4 +21,4 @@
 
 
 #### Current 
-- test the GETAnimeList route
+
