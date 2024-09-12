@@ -107,11 +107,30 @@ type MALAnimeDetails struct {
 	UpdatedAt  time.Time  `json:"updated_at"`
 }
 
+type MALAnimeRanking struct {
+	Data []struct {
+		Node    MALDataNode `json:"node"`
+		Ranking struct {
+			Rank int `json:"rank"`
+		} `json:"ranking"`
+	} `json:"data"`
+	Paging struct {
+		Next string `json:"next"`
+	} `json:"paging"`
+}
+
 /**************** NATIVE TYPES ****************/
 
 type AnimeListDataNode struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`
+}
+
+type AnimeRankingDataNode struct {
+    Node AnimeListDataNode
+    Ranking struct{
+        Rank int `json:"rank"`
+    }`json:"ranking"`
 }
 
 type NativeRecommendation struct {
@@ -169,26 +188,26 @@ type NativeAnimeDetails struct {
 }
 
 type NativeAnimeDetails_Basic struct {
-	AlternativeTitles      AlternativeTitles      `json:"alternative_titles"`
-	AverageEpisodeDuration int                    `json:"average_episode_duration"`
-	Broadcast              Broadcast              `json:"broadcast"`
-	CreatedAt              time.Time              `json:"created_at"`
-	EndDate                string                 `json:"end_date"`
-	Genres                 []Genre                `json:"genres"`
-	ID                     int                    `json:"id"`
-	MainPicture            Picture                `json:"main_picture"`
-	MediaType              string                 `json:"media_type"`
-	NumEpisodes            int                    `json:"num_episodes"`
-	Rank                   int                    `json:"rank"`
-	Rating                 string                 `json:"rating"`
-	Source                 string                 `json:"source"`
+	AlternativeTitles      AlternativeTitles `json:"alternative_titles"`
+	AverageEpisodeDuration int               `json:"average_episode_duration"`
+	Broadcast              Broadcast         `json:"broadcast"`
+	CreatedAt              time.Time         `json:"created_at"`
+	EndDate                string            `json:"end_date"`
+	Genres                 []Genre           `json:"genres"`
+	ID                     int               `json:"id"`
+	MainPicture            Picture           `json:"main_picture"`
+	MediaType              string            `json:"media_type"`
+	NumEpisodes            int               `json:"num_episodes"`
+	Rank                   int               `json:"rank"`
+	Rating                 string            `json:"rating"`
+	Source                 string            `json:"source"`
 	StartSeason            struct {
 		Season string `json:"season"`
 		Year   int    `json:"year"`
 	} `json:"start_season"`
-	Status     string     `json:"status"`
-	Synopsis   string     `json:"synopsis"`
-	Title      string     `json:"title"`
+	Status   string `json:"status"`
+	Synopsis string `json:"synopsis"`
+	Title    string `json:"title"`
 }
 
 type NativeAnimeDetails_Advanced struct {
@@ -222,3 +241,9 @@ type NativeAnimeDetails_Advanced struct {
 	Title      string     `json:"title"`
 }
 
+type NativeAnimeRanking struct {
+    Data []AnimeRankingDataNode `json:"data"`
+	Paging struct {
+		Next string `json:"next"`
+	}
+}

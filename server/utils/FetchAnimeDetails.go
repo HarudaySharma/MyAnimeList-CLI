@@ -3,13 +3,15 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
 	"log"
 	"net/http"
+
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
 )
 
-func FetchAnimeDetails(animeId string, fields []AnimeDetailField) *types.NativeAnimeDetails {
+func FetchAnimeDetails(animeId string, fields []enums.AnimeDetailField) *types.NativeAnimeDetails {
 	client := http.Client{}
 
 	fieldsStr := ConvertToCommaSeperatedString(fields)

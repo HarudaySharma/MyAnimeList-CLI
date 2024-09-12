@@ -11,9 +11,10 @@ func StartServer(port string) {
 
 	// create request routez
 	http.HandleFunc("/api/anime-list", handlers.GETAnimeList)
-
     // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
-	http.HandleFunc("/api/anime/", handlers.GETAnimeDetails)
+    http.HandleFunc("/api/anime/", handlers.GETAnimeDetails)
+    http.HandleFunc("/api/anime/ranking", handlers.GETAnimeRanking)
+
 
 	// SERVER
 	s := http.Server{

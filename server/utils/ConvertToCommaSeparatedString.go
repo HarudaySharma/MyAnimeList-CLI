@@ -2,9 +2,11 @@ package utils
 
 import (
 	"strings"
+
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
 )
 
-func ConvertToCommaSeperatedString(data []AnimeDetailField) string {
+func ConvertToCommaSeperatedString(data []enums.AnimeDetailField) string {
 	fieldsStr := strings.Builder{}
 	for i, d := range data {
 		if i != 0 {

@@ -3,11 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
 )
 
 /*
@@ -84,8 +86,8 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 
 /*
 GET anime details
-  - ROUTE: /api/anime/{animeId}?detailType="Basic"|"Advanced"|"Custom"&custom="....."
-  - if detailType is "custom" then the custom query param should be filled too
+  - ROUTE: /api/anime/{animeId}?detail_type="Basic"|"Advanced"|"Custom"&fields="....."
+  - if detail_type is "custom" then the custom query param should be filled too
   - Returns blank json object with id: 0 for invalid animeId
 */
 func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
@@ -122,24 +124,24 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	// ****QUERY PARAMS****
 
 	var data interface{}
-	detailType := r.URL.Query().Get("detailType")
+	detailType := r.URL.Query().Get("detail_type")
 	switch strings.ToLower(detailType) {
 
 	case "":
-		data = utils.FetchAnimeDetails(animeId, utils.EveryDetailField())
+		data = utils.FetchAnimeDetails(animeId, enums.EveryDetailField())
 
 	case "basic":
-		data = utils.FetchAnimeDetails(animeId, utils.BasicDetailFields())
+		data = utils.FetchAnimeDetails(animeId, enums.BasicDetailFields())
 
 	case "advanced":
-		data = utils.FetchAnimeDetails(animeId, utils.AdvancedDetailFields())
+		data = utils.FetchAnimeDetails(animeId, enums.AdvancedDetailFields())
 
 	case "custom":
 		// get the "custom" query param
-		fields := strings.ReplaceAll(r.URL.Query().Get("custom"), " ", "")
+		fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
 		fieldArr := strings.Split(fields, ",")
 
-		parsedFields, invalidFound := utils.ParseDetailsField(fieldArr)
+		parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
 		if len(parsedFields) == 0 && invalidFound {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprint(w, "{\"error\": \"invalid custom fields\"}")
@@ -149,7 +151,7 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"error\": \"invalid detailType\"}")
+		fmt.Fprint(w, "{\"error\": \"invalid detail_type\"}")
 		return
 	}
 
@@ -161,4 +163,75 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprint(w, string(jsonData))
+
+    return;
+}
+
+/*
+GET anime ranking
+    - ROUTE: /api/anime/ranking?ranking_type&limit&offset&fields
+ */
+func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
+	log.Println("*****GETAnimeRanking Handler called*****")
+
+    q := r.URL.Query()
+
+    rankingType := q.Get("ranking_type")
+    rankingTypeParsed, ok := enums.ParseAnimeRaking(rankingType)
+    if rankingType == "" || !ok {
+		fmt.Fprint(w, "{\"error\": \"invalid query params \"ranking_type\"\"}")
+		return
+    }
+
+    fields := q.Get("fields")
+	limitStr := q.Get("limit")
+	offsetStr := q.Get("offset")
+	limit := 0
+	offset := 0
+	var err error
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(q.Get("limit")) // returns 0 if err
+		if err != nil {
+			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)}")
+				return
+			}
+
+			fmt.Fprint(w, "{\"error\": \"unexpected error\"}")
+			return
+		}
+	}
+
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(q.Get("offset"))
+		if err != nil {
+			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"offset\"[0,100)\"}")
+				return
+			}
+
+			fmt.Fprint(w, "{\"error\": \"unexpected error\"}")
+			return
+		}
+	}
+    
+    // fetchAnimeRanking
+    data := utils.FetchAnimeRanking(utils.FetchAnimeRankingParams{
+        Ranking: rankingTypeParsed,
+        Limit: limit,
+        Offset: offset,
+        Fields: fields,
+    })
+
+    jsonData, err := json.Marshal(data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "{\"error\": \"JSON parsing failed\"}")
+		return
+	}
+
+	fmt.Fprint(w, string(jsonData))
+
+    return;
 }

@@ -1,4 +1,4 @@
-package utils
+package enums
 
 type AnimeDetailField string
 

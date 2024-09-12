@@ -3,10 +3,12 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
 	"log"
 	"net/http"
+
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
 )
 
 type FetchAnimeListParams struct {
@@ -17,22 +19,18 @@ type FetchAnimeListParams struct {
 }
 
 func FetchAnimeList(p FetchAnimeListParams) *types.NativeAnimeList {
-	const DEFAULT_LIMIT = 10
-	const DEFAULT_OFFSET = 0
-	const MAX_LIMIT = 100
-	const MAX_OFFSET = 99
 
 	if p.Query == "" {
 		return &types.NativeAnimeList{}
 	}
 	if p.Limit == 0 {
-		p.Limit = DEFAULT_LIMIT
+		p.Limit = enums.DEFAULT_LIMIT
 	}
-	if p.Limit > MAX_LIMIT {
-		p.Limit = MAX_LIMIT
+	if p.Limit > enums.MAX_LIMIT {
+		p.Limit = enums.MAX_LIMIT
 	}
-	if p.Offset > MAX_OFFSET {
-		p.Offset = DEFAULT_OFFSET
+	if p.Offset > enums.MAX_OFFSET {
+		p.Offset = enums.DEFAULT_OFFSET
 	}
 
 	// create a client
