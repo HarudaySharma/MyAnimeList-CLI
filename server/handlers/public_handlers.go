@@ -175,6 +175,13 @@ GET anime ranking
 func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 	log.Println("*****GETAnimeRanking Handler called*****")
 
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"}")
+		return
+	}
+
+
 	q := r.URL.Query()
 
 	rankingType := q.Get("ranking_type")
@@ -216,7 +223,7 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-    // parsing fields
+	// parsing fields
 	fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
 	fieldArr := strings.Split(fields, ",")
 
@@ -242,8 +249,105 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    w.Header().Set("content-type", "application/json" )
+	w.Header().Set("content-type", "application/json")
 	fmt.Fprint(w, string(jsonData))
 
 	return
+}
+
+/*
+GET Seasonal Anime
+  - ROUTE: /api/anime/season/{year}/{season}?limit?offset?sort?fields
+*/
+func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
+	log.Println("*****GETSeasonalAnime Handler called*****")
+
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"}")
+		return
+	}
+
+	// ****PATH Params****
+
+	p := r.URL.Path
+	pathSegments := strings.Split(p, "/")
+
+	if len(pathSegments) != 6 {
+		if len(pathSegments) != 7 || pathSegments[len(pathSegments)-1] != "" {
+            log.Printf("here")
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+	}
+
+	var season, year string
+	if pathSegments[len(pathSegments)-1] == "" {
+		// FOR: /api/anime/{year}/{season}/
+		season = pathSegments[len(pathSegments)-2]
+		year = pathSegments[len(pathSegments)-3]
+	} else {
+		// FOR: /api/anime/{year}/{season}
+		season = pathSegments[len(pathSegments)-1]
+		year = pathSegments[len(pathSegments)-2]
+	}
+
+	// ****QUERY PARAMS****
+
+	q := r.URL.Query()
+	limitStr := q.Get("limit")
+	offsetStr := q.Get("offset")
+	limit := 0
+	offset := 0
+	var err error
+
+	if limitStr != "" {
+		limit, err = strconv.Atoi(q.Get("limit")) // returns 0 if err
+		if err != nil {
+			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)}")
+				return
+			}
+
+			fmt.Fprint(w, "{\"error\": \"unexpected error\"}")
+			return
+		}
+	}
+
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(q.Get("offset"))
+		if err != nil {
+			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"offset\"[0,100)\"}")
+				return
+			}
+
+			fmt.Fprint(w, "{\"error\": \"unexpected error\"}")
+			return
+		}
+	}
+
+	// parsing fields
+	fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
+	fieldArr := strings.Split(fields, ",")
+
+	parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
+	if invalidFound {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "{\"error\": \"invalid custom fields\"}")
+		return
+	}
+
+	// parsing sort
+	// valid values: anime_score, anime_num_list_users
+	// sort order: descending
+	sort := q.Get("sort")
+
+	if sort != "" && sort != "anime_score" && sort != "anime_num_list_users" {
+		fmt.Fprint(w, "{\"error\": \"invalid query params \"sort{anime_num_list_users, anime_score}\"\"}")
+		return
+	}
+
+
+
 }

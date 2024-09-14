@@ -2,7 +2,6 @@
 
 #### all the public routes for MAL_CLI;
 
-
 - [x] GET anime list
 - [x] GET anime details 
 - [x] GET anime ranking 
@@ -16,6 +15,7 @@
 - [ ] DELETE user anime list item
 
 #### User Script (client)
+
 - mal-cli anime [ranking|seasonal] "search title"
     - user will see the list of anime matching the search (fzf)
     - on selecting one of them, (if options are given) they will get the details of the selection

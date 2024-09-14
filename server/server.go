@@ -14,6 +14,8 @@ func StartServer(port string) {
     // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
     http.HandleFunc("/api/anime/", handlers.GETAnimeDetails)
     http.HandleFunc("/api/anime/ranking", handlers.GETAnimeRanking)
+    // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
+    http.HandleFunc("/api/anime/seasonal/", handlers.GETSeasonalAnime)
 
 
 	// SERVER

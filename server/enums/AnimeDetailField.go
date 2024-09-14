@@ -1,5 +1,7 @@
 package enums
 
+import "strings"
+
 type AnimeDetailField string
 
 const (
@@ -57,7 +59,13 @@ func EveryDetailField() []AnimeDetailField {
 func ParseDetailsField(fields []string) ([]AnimeDetailField, bool) {
 	parsedFields := make([]AnimeDetailField, 0)
 	invalidFieldEncountered := false
+
 	for _, field := range fields {
+        field = strings.Trim(field, " ")
+        if field == "" {
+            continue
+        }
+
 		f, exists := allFieldsMap[field]
 		if !exists {
 			invalidFieldEncountered = true
