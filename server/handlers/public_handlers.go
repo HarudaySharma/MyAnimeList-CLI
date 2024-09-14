@@ -144,7 +144,7 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 		parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
 		if len(parsedFields) == 0 && invalidFound {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, "{\"error\": \"invalid custom fields\"}")
+			fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", enums.EveryDetailField())
 			return
 		}
 		data = utils.FetchAnimeDetails(animeId, parsedFields)
@@ -180,7 +180,6 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"}")
 		return
 	}
-
 
 	q := r.URL.Query()
 
@@ -230,7 +229,7 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 	parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
 	if len(parsedFields) == 0 && invalidFound {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"error\": \"invalid custom fields\"}")
+		fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", enums.EveryDetailField())
 		return
 	}
 
@@ -275,7 +274,7 @@ func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
 
 	if len(pathSegments) != 6 {
 		if len(pathSegments) != 7 || pathSegments[len(pathSegments)-1] != "" {
-            log.Printf("here")
+			log.Printf("here")
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -334,20 +333,25 @@ func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
 	parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
 	if invalidFound {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "{\"error\": \"invalid custom fields\"}")
+		fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", enums.EveryDetailField())
 		return
 	}
 
 	// parsing sort
 	// valid values: anime_score, anime_num_list_users
 	// sort order: descending
-	sort := q.Get("sort")
+	sortOptions := strings.ReplaceAll(r.URL.Query().Get("sort"), " ", "")
+	sortOptionArr := strings.Split(sortOptions, ",")
 
-	if sort != "" && sort != "anime_score" && sort != "anime_num_list_users" {
-		fmt.Fprint(w, "{\"error\": \"invalid query params \"sort{anime_num_list_users, anime_score}\"\"}")
+	parsedSortOptions, invalidFound := enums.ParseSortOptions(sortOptionArr)
+	if invalidFound {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "{\"error\": \"invalid query params sort {available: %v }\"}", enums.SortOptions())
 		return
 	}
 
-
+	log.Printf("season: %s, year: %s", season, year)
+	log.Printf("limit: %d, offset: %d", limit, offset)
+	log.Printf("sort: %v, fields: %v", parsedSortOptions, parsedFields)
 
 }
