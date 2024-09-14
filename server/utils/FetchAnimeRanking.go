@@ -14,10 +14,9 @@ import (
 type FetchAnimeRankingParams struct {
 	Ranking       enums.Ranking
 	Limit, Offset int
-	Fields        string
+	Fields        []enums.AnimeDetailField
 }
 
-// TODO: make types customizable for fields query
 func FetchAnimeRanking(p FetchAnimeRankingParams) *types.NativeAnimeRanking {
 	// handle params being non existent
 
@@ -36,14 +35,16 @@ func FetchAnimeRanking(p FetchAnimeRankingParams) *types.NativeAnimeRanking {
 
 	client := http.Client{}
 
+    fields := ConvertToCommaSeperatedString(p.Fields)
 	url := fmt.Sprintf("%s/anime/ranking?ranking_type=%s&limit=%v&offset=%v&fields=%s",
 		config.C.MAL_API_URL,
 		p.Ranking,
 		p.Limit,
 		p.Offset,
-		p.Fields,
+        fields,
 	)
 	req := CreateHttpRequest("GET", url)
+	//log.Println("Fetching from URL:", url)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -55,19 +56,22 @@ func FetchAnimeRanking(p FetchAnimeRankingParams) *types.NativeAnimeRanking {
 		log.Fatalf("ERROR in FetchAnimeList decoding json body \n %v", err)
 	}
 
-	defer res.Body.Close()
+    defer res.Body.Close()
+
+	//log.Printf("CustomFields for ID %d: %+v\n", ret.Data[0].Node.ID, ret.Data[0].Node.CustomFields) // CustomFields correctly populated
+
 
 	return convertToNativeAnimeRankingType(&ret)
 }
 
 func convertToNativeAnimeRankingType(data *types.MALAnimeRanking) *types.NativeAnimeRanking {
 	var parsedData types.NativeAnimeRanking
-
 	for _, d := range data.Data {
 		parsedData.Data = append(parsedData.Data, types.AnimeRankingDataNode{
 			Node: types.AnimeListDataNode{
-				ID:    d.Node.ID,
-				Title: d.Node.Title,
+				ID:           d.Node.ID,
+				Title:        d.Node.Title,
+				CustomFields: d.Node.CustomFields, // Still keeping the raw custom fields
 			},
 			Ranking: d.Ranking,
 		})

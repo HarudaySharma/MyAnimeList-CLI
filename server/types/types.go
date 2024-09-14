@@ -1,6 +1,8 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type AlternativeTitles struct {
 	EN       string   `json:"en"`
@@ -22,6 +24,7 @@ type MALDataNode struct {
 	ID          int     `json:"id"`
 	MainPicture Picture `json:"main_picture"`
 	Title       string  `json:"title"`
+    CustomFields map[string]interface{} `json:"-"`
 }
 
 type Recommendation struct {
@@ -69,6 +72,7 @@ type MALAnimeList struct {
 	Paging struct {
 		Next string `json:"next"`
 	} `json:"paging"`
+
 }
 
 type MALAnimeDetails struct {
@@ -113,7 +117,7 @@ type MALAnimeRanking struct {
 		Ranking struct {
 			Rank int `json:"rank"`
 		} `json:"ranking"`
-	} `json:"data"`
+    } `json:"data"`
 	Paging struct {
 		Next string `json:"next"`
 	} `json:"paging"`
@@ -124,6 +128,7 @@ type MALAnimeRanking struct {
 type AnimeListDataNode struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`
+    CustomFields map[string]interface{} `json:""`
 }
 
 type AnimeRankingDataNode struct {
@@ -247,3 +252,4 @@ type NativeAnimeRanking struct {
 		Next string `json:"next"`
 	}
 }
+

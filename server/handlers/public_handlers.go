@@ -70,7 +70,7 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 		Offset: int8(offset),
 	})
 
-	utils.PrintJSON(data)
+	//utils.PrintJSON(data)
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -78,7 +78,7 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Add("content-type", "application/json")
+	w.Header().Set("content-type", "application/json")
 	fmt.Fprint(w, string(jsonData))
 
 	return
@@ -162,28 +162,28 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("content-type", "application/json")
 	fmt.Fprint(w, string(jsonData))
 
-    return;
+	return
 }
 
 /*
 GET anime ranking
-    - ROUTE: /api/anime/ranking?ranking_type&limit&offset&fields
- */
+  - ROUTE: /api/anime/ranking?ranking_type&limit&offset&fields
+*/
 func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 	log.Println("*****GETAnimeRanking Handler called*****")
 
-    q := r.URL.Query()
+	q := r.URL.Query()
 
-    rankingType := q.Get("ranking_type")
-    rankingTypeParsed, ok := enums.ParseAnimeRaking(rankingType)
-    if rankingType == "" || !ok {
+	rankingType := q.Get("ranking_type")
+	rankingTypeParsed, ok := enums.ParseAnimeRaking(rankingType)
+	if rankingType == "" || !ok {
 		fmt.Fprint(w, "{\"error\": \"invalid query params \"ranking_type\"\"}")
 		return
-    }
+	}
 
-    fields := q.Get("fields")
 	limitStr := q.Get("limit")
 	offsetStr := q.Get("offset")
 	limit := 0
@@ -215,23 +215,35 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-    
-    // fetchAnimeRanking
-    data := utils.FetchAnimeRanking(utils.FetchAnimeRankingParams{
-        Ranking: rankingTypeParsed,
-        Limit: limit,
-        Offset: offset,
-        Fields: fields,
-    })
 
-    jsonData, err := json.Marshal(data)
+    // parsing fields
+	fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
+	fieldArr := strings.Split(fields, ",")
+
+	parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
+	if len(parsedFields) == 0 && invalidFound {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "{\"error\": \"invalid custom fields\"}")
+		return
+	}
+
+	// fetching anime ranking
+	data := utils.FetchAnimeRanking(utils.FetchAnimeRankingParams{
+		Ranking: rankingTypeParsed,
+		Limit:   limit,
+		Offset:  offset,
+		Fields:  parsedFields,
+	})
+
+	jsonData, err := json.Marshal(data)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "{\"error\": \"JSON parsing failed\"}")
 		return
 	}
 
+    w.Header().Set("content-type", "application/json" )
 	fmt.Fprint(w, string(jsonData))
 
-    return;
+	return
 }
