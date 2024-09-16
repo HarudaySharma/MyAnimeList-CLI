@@ -1,4 +1,4 @@
-package utils
+package services
 
 import (
 	"encoding/json"
@@ -7,43 +7,44 @@ import (
 	"net/http"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
+	e "github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+	t "github.com/HarudaySharma/MyAnimeList-CLI/server/types"
+	u "github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
 )
 
 type FetchAnimeRankingParams struct {
-	Ranking       enums.Ranking
+	Ranking       e.Ranking
 	Limit, Offset int
-	Fields        []enums.AnimeDetailField
+	Fields        []e.AnimeDetailField
 }
 
-func FetchAnimeRanking(p FetchAnimeRankingParams) *types.NativeAnimeRanking {
+func FetchAnimeRanking(p FetchAnimeRankingParams) *t.NativeAnimeRanking {
 	// handle params being non existent
 
 	if p.Ranking == "" {
-		return &types.NativeAnimeRanking{}
+		return &t.NativeAnimeRanking{}
 	}
 	if p.Limit == 0 {
-		p.Limit = enums.DEFAULT_LIMIT
+		p.Limit = e.DEFAULT_LIMIT
 	}
-	if p.Limit > enums.MAX_LIMIT {
-		p.Limit = enums.MAX_LIMIT
+	if p.Limit > e.MAX_LIMIT {
+		p.Limit = e.MAX_LIMIT
 	}
-	if p.Offset > enums.MAX_OFFSET {
-		p.Offset = enums.DEFAULT_OFFSET
+	if p.Offset > e.MAX_OFFSET {
+		p.Offset = e.DEFAULT_OFFSET
 	}
 
 	client := http.Client{}
 
-    fields := ConvertToCommaSeperatedString(p.Fields)
+	fields := u.ConvertToCommaSeperatedString(p.Fields)
 	url := fmt.Sprintf("%s/anime/ranking?ranking_type=%s&limit=%v&offset=%v&fields=%s",
 		config.C.MAL_API_URL,
 		p.Ranking,
 		p.Limit,
 		p.Offset,
-        fields,
+		fields,
 	)
-	req := CreateHttpRequest("GET", url)
+	req := u.CreateHttpRequest("GET", url)
 	//log.Println("Fetching from URL:", url)
 
 	res, err := client.Do(req)
@@ -51,24 +52,23 @@ func FetchAnimeRanking(p FetchAnimeRankingParams) *types.NativeAnimeRanking {
 		log.Fatalf("ERROR in FetchAnimeList fetching from MAL API \n %v", err)
 	}
 
-	var ret types.MALAnimeRanking
+	var ret t.MALAnimeRanking
 	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
 		log.Fatalf("ERROR in FetchAnimeList decoding json body \n %v", err)
 	}
 
-    defer res.Body.Close()
+	defer res.Body.Close()
 
 	//log.Printf("CustomFields for ID %d: %+v\n", ret.Data[0].Node.ID, ret.Data[0].Node.CustomFields) // CustomFields correctly populated
-
 
 	return convertToNativeAnimeRankingType(&ret)
 }
 
-func convertToNativeAnimeRankingType(data *types.MALAnimeRanking) *types.NativeAnimeRanking {
-	var parsedData types.NativeAnimeRanking
+func convertToNativeAnimeRankingType(data *t.MALAnimeRanking) *t.NativeAnimeRanking {
+	var parsedData t.NativeAnimeRanking
 	for _, d := range data.Data {
-		parsedData.Data = append(parsedData.Data, types.AnimeRankingDataNode{
-			Node: types.AnimeListDataNode{
+		parsedData.Data = append(parsedData.Data, t.AnimeRankingDataNode{
+			Node: t.AnimeListDataNode{
 				ID:           d.Node.ID,
 				Title:        d.Node.Title,
 				CustomFields: d.Node.CustomFields, // Still keeping the raw custom fields

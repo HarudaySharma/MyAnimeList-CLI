@@ -1,6 +1,6 @@
-package utils
+package services
 
-import "github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+import e "github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
 
 type FetchSeasonalAnimeParams struct {
 	Season string
@@ -8,7 +8,7 @@ type FetchSeasonalAnimeParams struct {
 	Sort   string
 	Limit  int
 	Offset int
-	Fields []enums.AnimeDetailField
+	Fields []e.AnimeDetailField
 }
 
 func FetchSeasonalAnime() {

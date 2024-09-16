@@ -1,4 +1,4 @@
-package utils
+package services
 
 import (
 	"encoding/json"
@@ -7,8 +7,9 @@ import (
 	"net/http"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
+	e "github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+	t "github.com/HarudaySharma/MyAnimeList-CLI/server/types"
+	u "github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
 )
 
 type FetchAnimeListParams struct {
@@ -18,19 +19,19 @@ type FetchAnimeListParams struct {
 	Fields string
 }
 
-func FetchAnimeList(p FetchAnimeListParams) *types.NativeAnimeList {
+func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 
 	if p.Query == "" {
-		return &types.NativeAnimeList{}
+		return &t.NativeAnimeList{}
 	}
 	if p.Limit == 0 {
-		p.Limit = enums.DEFAULT_LIMIT
+		p.Limit = e.DEFAULT_LIMIT
 	}
-	if p.Limit > enums.MAX_LIMIT {
-		p.Limit = enums.MAX_LIMIT
+	if p.Limit > e.MAX_LIMIT {
+		p.Limit = e.MAX_LIMIT
 	}
-	if p.Offset > enums.MAX_OFFSET {
-		p.Offset = enums.DEFAULT_OFFSET
+	if p.Offset > e.MAX_OFFSET {
+		p.Offset = e.DEFAULT_OFFSET
 	}
 
 	// create a client
@@ -42,14 +43,14 @@ func FetchAnimeList(p FetchAnimeListParams) *types.NativeAnimeList {
 		p.Limit,
 		p.Offset,
 	)
-	req := CreateHttpRequest("GET", url)
+	req := u.CreateHttpRequest("GET", url)
 
 	res, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("ERROR in FetchAnimeList fetching from MAL API \n %v", err)
 	}
 
-	ret := types.MALAnimeList{}
+	ret := t.MALAnimeList{}
 	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
 		log.Fatalf("ERROR in FetchAnimeList decoding json body \n %v", err)
 	}
@@ -59,11 +60,11 @@ func FetchAnimeList(p FetchAnimeListParams) *types.NativeAnimeList {
 	return convertToNativeAnimeListType(&ret)
 }
 
-func convertToNativeAnimeListType(data *types.MALAnimeList) *types.NativeAnimeList {
-	convertedData := types.NativeAnimeList{}
+func convertToNativeAnimeListType(data *t.MALAnimeList) *t.NativeAnimeList {
+	convertedData := t.NativeAnimeList{}
 
 	for _, v := range data.Data {
-		node := types.AnimeListDataNode{
+		node := t.AnimeListDataNode{
 			ID:    v.Node.ID,
 			Title: v.Node.Title,
 		}

@@ -1,4 +1,4 @@
-package utils
+package services
 
 import (
 	"encoding/json"
@@ -7,28 +7,29 @@ import (
 	"net/http"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/server/config"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/types"
+	e "github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+	t "github.com/HarudaySharma/MyAnimeList-CLI/server/types"
+	u "github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
 )
 
-func FetchAnimeDetails(animeId string, fields []enums.AnimeDetailField) *types.NativeAnimeDetails {
+func FetchAnimeDetails(animeId string, fields []e.AnimeDetailField) *t.NativeAnimeDetails {
 	client := http.Client{}
 
-	fieldsStr := ConvertToCommaSeperatedString(fields)
+	fieldsStr := u.ConvertToCommaSeperatedString(fields)
 	url := fmt.Sprintf("%s/anime/%s?fields=%s",
 		config.C.MAL_API_URL,
 		animeId,
 		fieldsStr,
 	)
 	log.Println(url)
-	req := CreateHttpRequest("GET", url)
+	req := u.CreateHttpRequest("GET", url)
 
 	res, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var data types.MALAnimeDetails
+	var data t.MALAnimeDetails
 	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
 		log.Fatalf("ERROR in FetchAnimeDetails decoding json body \n %v", err)
 	}
@@ -38,8 +39,8 @@ func FetchAnimeDetails(animeId string, fields []enums.AnimeDetailField) *types.N
 	return convertToNativeAnimeDetailsType(&data)
 }
 
-func convertToNativeAnimeDetailsType(data *types.MALAnimeDetails) *types.NativeAnimeDetails {
-	nativeDetails := types.NativeAnimeDetails{
+func convertToNativeAnimeDetailsType(data *t.MALAnimeDetails) *t.NativeAnimeDetails {
+	nativeDetails := t.NativeAnimeDetails{
 		ID:                     data.ID,
 		AlternativeTitles:      data.AlternativeTitles,
 		AverageEpisodeDuration: data.AverageEpisodeDuration,
@@ -71,14 +72,14 @@ func convertToNativeAnimeDetailsType(data *types.MALAnimeDetails) *types.NativeA
 	}
 
 	for _, d := range data.RelatedAnime {
-		nra := types.NativeRelatedAnime{}
+		nra := t.NativeRelatedAnime{}
 		nra.Node.ID = d.Node.ID
 		nra.Node.Title = d.Node.Title
 		nativeDetails.RelatedAnime = append(nativeDetails.RelatedAnime, nra)
 	}
 
 	for _, d := range data.Recommendations {
-		nrm := types.NativeRecommendation{}
+		nrm := t.NativeRecommendation{}
 		nrm.Node.ID = d.Node.ID
 		nrm.Node.Title = d.Node.Title
 		nativeDetails.Recommendations = append(nativeDetails.Recommendations, nrm)

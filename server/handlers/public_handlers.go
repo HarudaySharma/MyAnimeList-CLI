@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/services"
 )
 
 /*
@@ -64,7 +64,7 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := utils.FetchAnimeList(utils.FetchAnimeListParams{
+	data := services.FetchAnimeList(services.FetchAnimeListParams{
 		Query:  q.Get("q"),
 		Limit:  int8(limit),
 		Offset: int8(offset),
@@ -128,13 +128,13 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	switch strings.ToLower(detailType) {
 
 	case "":
-		data = utils.FetchAnimeDetails(animeId, enums.EveryDetailField())
+		data = services.FetchAnimeDetails(animeId, enums.EveryDetailField())
 
 	case "basic":
-		data = utils.FetchAnimeDetails(animeId, enums.BasicDetailFields())
+		data = services.FetchAnimeDetails(animeId, enums.BasicDetailFields())
 
 	case "advanced":
-		data = utils.FetchAnimeDetails(animeId, enums.AdvancedDetailFields())
+		data = services.FetchAnimeDetails(animeId, enums.AdvancedDetailFields())
 
 	case "custom":
 		// get the "custom" query param
@@ -147,7 +147,7 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", enums.EveryDetailField())
 			return
 		}
-		data = utils.FetchAnimeDetails(animeId, parsedFields)
+		data = services.FetchAnimeDetails(animeId, parsedFields)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -234,7 +234,7 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// fetching anime ranking
-	data := utils.FetchAnimeRanking(utils.FetchAnimeRankingParams{
+	data := services.FetchAnimeRanking(services.FetchAnimeRankingParams{
 		Ranking: rankingTypeParsed,
 		Limit:   limit,
 		Offset:  offset,
@@ -337,9 +337,7 @@ func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// parsing sort
-	// valid values: anime_score, anime_num_list_users
-	// sort order: descending
+    // parsing sort
 	sortOptions := strings.ReplaceAll(r.URL.Query().Get("sort"), " ", "")
 	sortOptionArr := strings.Split(sortOptions, ",")
 
