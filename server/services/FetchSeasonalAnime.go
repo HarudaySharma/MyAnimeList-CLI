@@ -37,15 +37,15 @@ func FetchSeasonalAnime(p FetchSeasonalAnimeParams) *t.NativeSeasonalAnime {
 
 	url := fmt.Sprintf("%s/anime/season/%s/%s?sort=%s&limit=%v&offset=%v&fields=%s",
 		c.C.MAL_API_URL,
-        p.Year,
-        p.Season,
+		p.Year,
+		p.Season,
 		u.ConvertToCommaSeperatedString(p.Sort),
 		p.Limit,
 		p.Offset,
 		u.ConvertToCommaSeperatedString(p.Fields),
 	)
 
-    log.Println(url)
+	log.Println(url)
 	req := u.CreateHttpRequest("GET", url)
 
 	res, err := client.Do(req)
@@ -53,7 +53,7 @@ func FetchSeasonalAnime(p FetchSeasonalAnimeParams) *t.NativeSeasonalAnime {
 		log.Fatalf("ERROR in FetchSeasonalAnimefetching from MAL API \n %v", err)
 	}
 
-    var ret t.MALSeasonalAnime
+	var ret t.MALSeasonalAnime
 	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
 		log.Fatalf("ERROR in FetchSeasonalAnimefetching decoding json body \n %v", err)
 	}
@@ -68,8 +68,9 @@ func convertToNativeSeasonalAnime(data *t.MALSeasonalAnime) *t.NativeSeasonalAni
 
 	for _, v := range data.Data {
 		node := t.AnimeListDataNode{
-			ID:    v.Node.ID,
-			Title: v.Node.Title,
+			ID:           v.Node.ID,
+			Title:        v.Node.Title,
+			CustomFields: v.Node.CustomFields,
 		}
 		convertedData.Data = append(convertedData.Data, node)
 	}
@@ -77,5 +78,3 @@ func convertToNativeSeasonalAnime(data *t.MALSeasonalAnime) *t.NativeSeasonalAni
 
 	return &convertedData
 }
-
-
