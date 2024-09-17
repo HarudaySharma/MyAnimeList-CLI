@@ -1,9 +1,10 @@
 package server
 
 import (
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/handlers"
 	"log"
 	"net/http"
+
+	"github.com/HarudaySharma/MyAnimeList-CLI/server/handlers"
 )
 
 func StartServer(port string) {

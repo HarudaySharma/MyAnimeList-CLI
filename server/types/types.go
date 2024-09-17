@@ -65,13 +65,19 @@ type Studio struct {
 	Name string `json:"name"`
 }
 
+type Page struct {
+	Next string `json:"next"`
+	Previous string `json:"previous"`
+}
+
 type MALAnimeList struct {
 	Data []struct {
 		Node MALDataNode `json:"node"`
 	} `json:"data"`
-	Paging struct {
+	/* Paging struct {
 		Next string `json:"next"`
-	} `json:"paging"`
+	} `json:"paging"` */
+    Paging Page `json:"paging"`
 
 }
 
@@ -118,12 +124,23 @@ type MALAnimeRanking struct {
 			Rank int `json:"rank"`
 		} `json:"ranking"`
     } `json:"data"`
-	Paging struct {
+	/* Paging struct {
 		Next string `json:"next"`
-	} `json:"paging"`
+	} `json:"paging"` */
+    Paging Page `json:"paging"`
 }
 
+type MALSeasonalAnime struct {
+    Data []struct {
+		Node    MALDataNode `json:"node"`
+    } `json:"data"`
+    Paging Page `json:"paging"`
+}
+/**********************************************/
+/**********************************************/
 /**************** NATIVE TYPES ****************/
+/**********************************************/
+/**********************************************/
 
 type AnimeListDataNode struct {
 	ID    int    `json:"id"`
@@ -145,9 +162,10 @@ type NativeRecommendation struct {
 
 type NativeAnimeList struct {
 	Data   []AnimeListDataNode `json:"data"`
-	Paging struct {
+	/* Paging struct {
 		Next string `json:"next"`
-	} `json:"paging"`
+	} `json:"paging"` */
+    Paging Page `json:"paging"`
 }
 
 type NativeRelatedAnime struct {
@@ -248,8 +266,15 @@ type NativeAnimeDetails_Advanced struct {
 
 type NativeAnimeRanking struct {
     Data []AnimeRankingDataNode `json:"data"`
-	Paging struct {
+	/* Paging struct {
 		Next string `json:"next"`
-	}
+	} */
+    Paging Page `json:"paging"`
+
+}
+
+type NativeSeasonalAnime struct {
+    Data []AnimeListDataNode  `json:"data"`
+    Paging Page `json:"paging"`
 }
 

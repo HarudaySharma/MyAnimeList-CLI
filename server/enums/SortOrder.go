@@ -21,10 +21,10 @@ func ParseSortOptions(options []string) ([]SortOption, bool) {
 	parsedOptions := make([]SortOption, 0)
 
 	for _, option := range options {
-        option = strings.Trim(option, " ")
-        if option == "" {
-            continue
-        }
+		option = strings.Trim(option, " ")
+		if option == "" {
+			continue
+		}
 
 		opt, exists := sortOptionsMap[option]
 		if !exists {

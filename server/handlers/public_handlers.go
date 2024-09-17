@@ -8,8 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
-	"github.com/HarudaySharma/MyAnimeList-CLI/server/services"
+	e "github.com/HarudaySharma/MyAnimeList-CLI/server/enums"
+	s "github.com/HarudaySharma/MyAnimeList-CLI/server/services"
+	u "github.com/HarudaySharma/MyAnimeList-CLI/server/utils"
 )
 
 /*
@@ -42,7 +43,7 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 		limit, err = strconv.Atoi(q.Get("limit")) // returns 0 if err
 		if err != nil {
 			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
-				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)}")
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)\"}")
 				return
 			}
 
@@ -64,7 +65,7 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := services.FetchAnimeList(services.FetchAnimeListParams{
+	data := s.FetchAnimeList(s.FetchAnimeListParams{
 		Query:  q.Get("q"),
 		Limit:  int8(limit),
 		Offset: int8(offset),
@@ -128,26 +129,26 @@ func GETAnimeDetails(w http.ResponseWriter, r *http.Request) {
 	switch strings.ToLower(detailType) {
 
 	case "":
-		data = services.FetchAnimeDetails(animeId, enums.EveryDetailField())
+		data = s.FetchAnimeDetails(animeId, e.EveryDetailField())
 
 	case "basic":
-		data = services.FetchAnimeDetails(animeId, enums.BasicDetailFields())
+		data = s.FetchAnimeDetails(animeId, e.BasicDetailFields())
 
 	case "advanced":
-		data = services.FetchAnimeDetails(animeId, enums.AdvancedDetailFields())
+		data = s.FetchAnimeDetails(animeId, e.AdvancedDetailFields())
 
 	case "custom":
 		// get the "custom" query param
 		fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
 		fieldArr := strings.Split(fields, ",")
 
-		parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
+		parsedFields, invalidFound := e.ParseDetailsField(fieldArr)
 		if len(parsedFields) == 0 && invalidFound {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", enums.EveryDetailField())
+			fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", u.ConvertToCommaSeperatedString(e.EveryDetailField()))
 			return
 		}
-		data = services.FetchAnimeDetails(animeId, parsedFields)
+		data = s.FetchAnimeDetails(animeId, parsedFields)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -184,7 +185,7 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	rankingType := q.Get("ranking_type")
-	rankingTypeParsed, ok := enums.ParseAnimeRaking(rankingType)
+	rankingTypeParsed, ok := e.ParseAnimeRaking(rankingType)
 	if rankingType == "" || !ok {
 		fmt.Fprint(w, "{\"error\": \"invalid query params \"ranking_type\"\"}")
 		return
@@ -200,7 +201,7 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 		limit, err = strconv.Atoi(q.Get("limit")) // returns 0 if err
 		if err != nil {
 			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
-				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)}")
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)\"}")
 				return
 			}
 
@@ -226,15 +227,15 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 	fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
 	fieldArr := strings.Split(fields, ",")
 
-	parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
+	parsedFields, invalidFound := e.ParseDetailsField(fieldArr)
 	if len(parsedFields) == 0 && invalidFound {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", enums.EveryDetailField())
+		fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", u.ConvertToCommaSeperatedString(e.EveryDetailField()))
 		return
 	}
 
 	// fetching anime ranking
-	data := services.FetchAnimeRanking(services.FetchAnimeRankingParams{
+	data := s.FetchAnimeRanking(s.FetchAnimeRankingParams{
 		Ranking: rankingTypeParsed,
 		Limit:   limit,
 		Offset:  offset,
@@ -291,6 +292,18 @@ func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
 		year = pathSegments[len(pathSegments)-2]
 	}
 
+	parsedSeason, valid := e.ParseAnimeSeason(season)
+	if !valid {
+		fmt.Fprintf( w, "{\"error\": \"invalid season {valid: %v }\"}",
+			u.ConvertToCommaSeperatedString(e.AnimeSeasons()))
+		return
+	}
+
+    // VALIDATE THE YEAR TOO
+
+   
+
+
 	// ****QUERY PARAMS****
 
 	q := r.URL.Query()
@@ -304,7 +317,7 @@ func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
 		limit, err = strconv.Atoi(q.Get("limit")) // returns 0 if err
 		if err != nil {
 			if numErr, ok := err.(*strconv.NumError); ok && numErr.Err == strconv.ErrSyntax {
-				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)}")
+				fmt.Fprint(w, "{\"error\": \"invalid query params (invalid \"limit\"(0,100)\"}")
 				return
 			}
 
@@ -330,26 +343,47 @@ func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
 	fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
 	fieldArr := strings.Split(fields, ",")
 
-	parsedFields, invalidFound := enums.ParseDetailsField(fieldArr)
+	parsedFields, invalidFound := e.ParseDetailsField(fieldArr)
 	if invalidFound {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", enums.EveryDetailField())
+		fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", u.ConvertToCommaSeperatedString(e.EveryDetailField()))
 		return
 	}
 
-    // parsing sort
+	// parsing sort
 	sortOptions := strings.ReplaceAll(r.URL.Query().Get("sort"), " ", "")
 	sortOptionArr := strings.Split(sortOptions, ",")
 
-	parsedSortOptions, invalidFound := enums.ParseSortOptions(sortOptionArr)
+	parsedSortOptions, invalidFound := e.ParseSortOptions(sortOptionArr)
 	if invalidFound {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "{\"error\": \"invalid query params sort {available: %v }\"}", enums.SortOptions())
+		fmt.Fprintf(w, "{\"error\": \"invalid query params sort {available: %v }\"}", u.ConvertToCommaSeperatedString(e.SortOptions()))
 		return
 	}
 
-	log.Printf("season: %s, year: %s", season, year)
-	log.Printf("limit: %d, offset: %d", limit, offset)
-	log.Printf("sort: %v, fields: %v", parsedSortOptions, parsedFields)
+	// log.Printf("season: %s, year: %s", season, year)
+	// log.Printf("limit: %d, offset: %d", limit, offset)
+	// log.Printf("sort: %v, fields: %v", parsedSortOptions, parsedFields)
+
+    data := s.FetchSeasonalAnime(s.FetchSeasonalAnimeParams{
+        Season: parsedSeason,
+        Year: year,
+        Limit: limit,
+        Offset: offset,
+        Fields: parsedFields,
+        Sort: parsedSortOptions,
+    })
+
+    jsonData, err := json.Marshal(data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "{\"error\": \"JSON parsing failed\"}")
+		return
+	}
+
+    w.Header().Set("content-type", "application/json")
+    fmt.Fprint(w, string(jsonData))
+
+    return
 
 }
