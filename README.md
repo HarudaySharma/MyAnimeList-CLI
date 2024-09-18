@@ -5,7 +5,7 @@
 - [x] GET anime list
 - [x] GET anime details 
 - [x] GET anime ranking 
-- [ ] GET seasonal anime **IN PROGRESS**
+- [x] GET seasonal anime
 
 #### all the user routes for MAL_CLI;
 
@@ -24,3 +24,11 @@
 ## Short Term Goal
 
 complete the public routes handling and then create a client capable of requesting data from those public routes
+
+## Today's Task
+
+design how the user will use the script...
+- default script behaviour would be to search for anime.
+    - searching for an anime will give them with a fzf list. 
+- to be explicit about searching "mal-cli search "name" "
+
