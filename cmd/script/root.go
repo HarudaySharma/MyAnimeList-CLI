@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
 		fmt.Println("Hello to the start")
 		// JSON data array
 		//req := utils.CreateHttpRequest("GET", "http://localhost:3000/anime/q=\"naruto\"");
-		res, err := http.Get(`http://localhost:3000/api/anime-list? q=naruto& fields=`)
+		res, err := http.Get(`http://localhost:3000/api/anime-list?q=naruto&fields=`)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -32,6 +32,9 @@ var rootCmd = &cobra.Command{
 
 		}
         // show the list of the all the anime found
+        for _, v := range(animeList.Data) {
+            fmt.Println(v.Title)
+        }
 
 	},
 }
@@ -41,4 +44,8 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+
+func init() {
 }

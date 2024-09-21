@@ -9,6 +9,9 @@ build-script:
 
 build: build-server build-script
 
+server: build-server
+	./bin/main.bin
+
 script: build-script
 	./bin/script.bin
 
