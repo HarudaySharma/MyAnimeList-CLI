@@ -65,10 +65,22 @@ func GETAnimeList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// parsing fields
+	fields := strings.ReplaceAll(r.URL.Query().Get("fields"), " ", "")
+	fieldArr := strings.Split(fields, ",")
+
+	parsedFields, invalidFound := e.ParseDetailsField(fieldArr)
+	if len(parsedFields) == 0 && invalidFound {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "{\"error\": \"invalid custom fields {available: %v }\"}", u.ConvertToCommaSeperatedString(e.EveryDetailField()))
+		return
+	}
+
 	data := s.FetchAnimeList(s.FetchAnimeListParams{
 		Query:  q.Get("q"),
 		Limit:  int8(limit),
 		Offset: int8(offset),
+        Fields: parsedFields,
 	})
 
 	//utils.PrintJSON(data)

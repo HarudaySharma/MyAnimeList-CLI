@@ -1,16 +1,14 @@
 package script
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"os/exec"
+	"regexp"
 	"strings"
 
-	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
+	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
-
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
@@ -20,72 +18,90 @@ var searchCmd = &cobra.Command{
 	Short: "search anime by title",
 	Run: func(cmd *cobra.Command, args []string) {
 		query := args[0]
-
-		url := fmt.Sprintf("%s/anime-list?q=%s",
-			enums.API_URL,
-			query,
-		)
-
-		res, err := http.Get(url)
-		if err != nil {
-			panic("error getting anime list")
+		if len(query) == 0 {
+			fmt.Print("Enter the anime title: ")
+			fmt.Scanln(&query)
 		}
 
-		var list types.NativeAnimeList
-		if err := json.NewDecoder(res.Body).Decode(&list); err != nil {
-			fmt.Printf("Json parsing error of anime-list \n %v", err)
+		var animeList types.NativeAnimeList
+		err := utils.GetAnimeList(&animeList, query, 100, 0, []es.AnimeDetailField{
+			es.StartSeason,
+		})
+		if err != nil {
+			fmt.Println(err)
 			return
 		}
 		// show the list with fzf
-		titleList := strings.Builder{}
+		// TODO: give an option for [next list & previous list]
+
+		titleList := make([]string, 0)
 		titleMap := make(map[string]int, 0)
-		for _, val := range list.Data {
-			titleList.WriteString(val.Title + "\n")
-			titleMap[val.Title+"\n"] = val.ID
+		for _, val := range animeList.Data {
+			plainKeyStr := strings.Builder{}
+			formattedKeyStr := strings.Builder{}
+
+			formattedKeyStr.WriteString(val.Title + "\t")
+			plainKeyStr.WriteString(val.Title + " ")
+
+			startSeason := val.CustomFields["start_season"]
+			if seasonData, ok := startSeason.(map[string]interface{}); ok {
+				season, _ := seasonData["season"]
+				year, _ := seasonData["year"]
+
+				plainKeyStr.WriteString(fmt.Sprintf("[ %v ~ %v ]", year, season))
+				formattedKeyStr.WriteString(fmt.Sprintf("\033[35m[ %v ~ %v ]\033[0m", year, season))
+			}
+
+			titleMap[plainKeyStr.String()] = val.ID
+			titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
 		}
 
-		fzf := exec.Command("fzf")
-		fzf.Stdin = strings.NewReader(titleList.String())
+		fzf := exec.Command("fzf", "--no-sort", "--cycle", "--ansi", "+m")
+		fzf.Stdin = strings.NewReader(strings.Join(titleList, "\n"))
 
-		selectedTitle, err := fzf.Output()
+		output, err := fzf.Output()
 		if err != nil {
 			fmt.Printf("error using fzf \n %v", err)
 			return
 		}
 
-		// get the anime information
-		url = fmt.Sprintf("%s/anime/%d?detail_type=%s",
-			enums.API_URL,
-			titleMap[string(selectedTitle)],
-			"basic",
-		)
+		selectedTitle := strings.TrimSpace(string(output))
+		fmt.Printf("searchTitle: |%s|\n", selectedTitle)
 
-		res, err = http.Get(url)
-		if err != nil {
-			panic("error getting anime list")
-		}
+		// Strip ANSI codes from selectedTitle to match the titleMap keys
+		cleanTitle := stripAnsi(selectedTitle)
+		fmt.Printf("cleanTitle: |%s| - %d\n", cleanTitle, len(cleanTitle))
 
-		var animeDetails types.NativeAnimeDetails_Basic
-		if err := json.NewDecoder(res.Body).Decode(&animeDetails); err != nil {
-			fmt.Printf("Json parsing error of animeDetails \n %v", err)
+
+        // FIX: title is not found
+		animeId, found := titleMap[cleanTitle]
+		if !found {
+			fmt.Println("Selected title not found in the map.")
 			return
 		}
 
-		// FIX:  textView being inferred as *tview.Box
-		// therefore, not getting the SetText() function access
-		// and also the tview application is all empty
-		textView := tview.NewTextView().
-			SetTitle(string(selectedTitle)).
-            SetText(animeDetails.Synopsis).
-			SetTitleColor(tcell.ColorGreen).
-			SetBackgroundColor(tcell.ColorDefault)
+		var animeDetails types.NativeAnimeDetails
+		utils.GetAnimeDetails(&animeDetails, animeId, "custom", []es.AnimeDetailField{
+			es.Id, es.Title,
+			es.Synopsis,
+			es.AlternativeTitles,
+			es.Genres,
+		})
 
-		// Create a new application
-		// Set the root and run the application
+		textView := tview.NewTextView().
+			SetLabel(animeDetails.Title).
+			SetText(string(animeDetails.Synopsis))
+
 		if err := tview.NewApplication().SetRoot(textView, true).Run(); err != nil {
 			panic(err)
 		}
 	},
+}
+
+// Helper function to strip ANSI codes from a string
+func stripAnsi(str string) string {
+	re := regexp.MustCompile(`\x1b\[[0-9;]*m`)
+	return re.ReplaceAllString(str, "")
 }
 
 func init() {

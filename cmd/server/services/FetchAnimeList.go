@@ -16,7 +16,7 @@ type FetchAnimeListParams struct {
 	Query  string
 	Limit  int8
 	Offset int8
-	Fields string
+	Fields []e.AnimeDetailField
 }
 
 func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
@@ -36,11 +36,13 @@ func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 	// create a client
 	client := http.Client{}
 
-	url := fmt.Sprintf("%s/anime?q=%s&limit=%v&offset=%v",
+	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
+	url := fmt.Sprintf("%s/anime?q=%s&limit=%v&offset=%v&fields=%v",
 		config.C.MAL_API_URL,
 		p.Query,
 		p.Limit,
 		p.Offset,
+		fieldsStr,
 	)
 	req := u.CreateHttpRequest("GET", url)
 
@@ -66,6 +68,7 @@ func convertToNativeAnimeListType(data *t.MALAnimeList) *t.NativeAnimeList {
 		node := t.AnimeListDataNode{
 			ID:    v.Node.ID,
 			Title: v.Node.Title,
+            CustomFields: v.Node.CustomFields,
 		}
 		convertedData.Data = append(convertedData.Data, node)
 	}

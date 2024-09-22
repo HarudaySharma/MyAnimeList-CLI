@@ -27,10 +27,8 @@ complete the public routes handling and then create a client capable of requesti
 
 #### Script Commands
 1. search
-    - 
 
-
-[!> [!NOTE]
+> [!NOTE]
 > Libraries for creating the terminal client
 > - cobra for all the functionality.
 > - tview for user interaction and data display. 
