@@ -9,6 +9,7 @@ import (
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +29,7 @@ var searchCmd = &cobra.Command{
 		}
 
 		var animeList types.NativeAnimeList
-		err := utils.GetAnimeList(&animeList, query, 100, 0, []es.AnimeDetailField{
+		err := utils.GetAnimeList(&animeList, query, 2, 0, []es.AnimeDetailField{
 			es.StartSeason,
 		})
 		if err != nil {
@@ -87,11 +88,69 @@ var searchCmd = &cobra.Command{
 			es.Genres,
 		})
 
-		textView := tview.NewTextView().
-			SetLabel(animeDetails.Title).
-			SetText(string(animeDetails.Synopsis))
+		alternativeTitles := strings.Builder{}
+		alternativeTitles.WriteString("EN:\t")
+		alternativeTitles.WriteString(fmt.Sprintln(animeDetails.AlternativeTitles.EN))
+		alternativeTitles.WriteString("JA:\t")
+		alternativeTitles.WriteString(fmt.Sprintln(animeDetails.AlternativeTitles.JA))
 
-		if err := tview.NewApplication().SetRoot(textView, true).Run(); err != nil {
+		titleBox := tview.NewTextView().
+			SetText(alternativeTitles.String()).
+			SetTextAlign(tview.AlignLeft).
+			SetWrap(true)
+
+		titleBox.SetBackgroundColor(tcell.ColorDefault).
+			SetTitle("Title").
+			SetTitleAlign(tview.AlignLeft).
+			SetTitleColor(tcell.ColorLightCyan).
+			SetBorder(true)
+
+		synopsisBox := tview.NewTextView().
+			SetText(string(animeDetails.Synopsis)).
+			SetTextAlign(tview.AlignLeft).
+			SetWrap(true).
+			SetScrollable(true)
+
+		synopsisBox.SetBackgroundColor(tcell.ColorDefault).
+			SetTitle("Synopsis").
+			SetBorder(true)
+
+		genres := strings.Builder{}
+		for i, genre := range animeDetails.Genres {
+			if i != 0 {
+				genres.WriteString(", ")
+			}
+			genres.WriteString(genre.Name)
+		}
+
+		genresBox := tview.NewTextView().
+			SetText(genres.String())
+
+		genresBox.SetBackgroundColor(tcell.ColorDefault).
+			SetTitle("Genres").
+			SetTitleColor(tcell.ColorGreenYellow).
+			SetTitleAlign(tview.AlignLeft).
+			SetBorder(true)
+
+		leftBox := tview.NewBox().
+			SetTitle("Left (20 cols)").
+			SetBackgroundColor(tcell.ColorDefault).
+			SetBorder(true)
+
+		rightBox := tview.NewBox().
+			SetTitle("Right (20 cols)").
+			SetBackgroundColor(tcell.ColorDefault).
+			SetBorder(true)
+
+		flex := tview.NewFlex().
+			AddItem(leftBox, 20, 1, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(titleBox, 5, 1, false).
+				AddItem(synopsisBox, 0, 3, false).
+				AddItem(genresBox, 5, 1, false), 0, 2, false).
+			AddItem(rightBox, 20, 1, false)
+
+		if err := tview.NewApplication().SetRoot(flex, true).Run(); err != nil {
 			panic(err)
 		}
 	},
