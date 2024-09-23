@@ -17,10 +17,14 @@ var searchCmd = &cobra.Command{
 	Use:   "search",
 	Short: "search anime by title",
 	Run: func(cmd *cobra.Command, args []string) {
-		query := args[0]
-		if len(query) == 0 {
-			fmt.Print("Enter the anime title: ")
-			fmt.Scanln(&query)
+		var query string
+		if len(args) == 0 || len(args[0]) < 3 {
+			for len(query) < 3 {
+				fmt.Print("Enter the anime title [atleast 3 letters word]: ")
+				fmt.Scanln(&query)
+			}
+		} else {
+			query = args[0]
 		}
 
 		var animeList types.NativeAnimeList
