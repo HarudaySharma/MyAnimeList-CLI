@@ -11,9 +11,7 @@ var rootCmd = &cobra.Command{
 	Use:   "mal-cli",
 	Short: "Search about anime from terminal",
 	Long:  `Access MyAnimList api from terminal`,
-	Run: func(cmd *cobra.Command, args []string) {
-        searchCmd.Run(cmd, args);
-	},
+	Run: searchCmd.Run,
 }
 
 func Execute() {

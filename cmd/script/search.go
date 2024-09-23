@@ -66,14 +66,9 @@ var searchCmd = &cobra.Command{
 		}
 
 		selectedTitle := strings.TrimSpace(string(output))
-		fmt.Printf("searchTitle: |%s|\n", selectedTitle)
-
 		// Strip ANSI codes from selectedTitle to match the titleMap keys
-		cleanTitle := stripAnsi(selectedTitle)
-		fmt.Printf("cleanTitle: |%s| - %d\n", cleanTitle, len(cleanTitle))
+		cleanTitle := stripAnsi(strings.ReplaceAll(selectedTitle, "\t", " "))
 
-
-        // FIX: title is not found
 		animeId, found := titleMap[cleanTitle]
 		if !found {
 			fmt.Println("Selected title not found in the map.")
