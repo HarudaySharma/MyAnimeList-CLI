@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/config"
 	e "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
@@ -36,10 +37,11 @@ func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 	// create a client
 	client := http.Client{}
 
+    encodedQuery := url.QueryEscape(p.Query)
 	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
 	url := fmt.Sprintf("%s/anime?q=%s&limit=%v&offset=%v&fields=%v",
 		config.C.MAL_API_URL,
-		p.Query,
+		encodedQuery,
 		p.Limit,
 		p.Offset,
 		fieldsStr,
@@ -53,6 +55,7 @@ func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 
 	ret := t.MALAnimeList{}
 	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+        // getting error if the query param (q = "word1 word2") i.e space b/w words is there
 		log.Fatalf("ERROR in FetchAnimeList decoding json body \n %v", err)
 	}
 

@@ -1,7 +1,10 @@
 package script
 
 import (
+	"bufio"
 	"fmt"
+	"net/url"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -20,16 +23,20 @@ var searchCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var query string
 		if len(args) == 0 || len(args[0]) < 3 {
+			reader := bufio.NewReader(os.Stdin)
 			for len(query) < 3 {
 				fmt.Print("Enter the anime title [atleast 3 letters word]: ")
-				fmt.Scanln(&query)
+				input, _ := reader.ReadString('\n')
+				query = strings.TrimSpace(input)
 			}
 		} else {
-			query = args[0]
+			query = strings.Join(args, " ")
+            query = strings.TrimSpace(query)
 		}
 
+		encodedQuery := url.QueryEscape(query)
 		var animeList types.NativeAnimeList
-		err := utils.GetAnimeList(&animeList, query, 2, 0, []es.AnimeDetailField{
+		err := utils.GetAnimeList(&animeList, encodedQuery, 100, 0, []es.AnimeDetailField{
 			es.StartSeason,
 		})
 		if err != nil {
@@ -86,6 +93,7 @@ var searchCmd = &cobra.Command{
 			es.Synopsis,
 			es.AlternativeTitles,
 			es.Genres,
+			es.Studios,
 		})
 
 		alternativeTitles := strings.Builder{}
@@ -120,7 +128,7 @@ var searchCmd = &cobra.Command{
 			if i != 0 {
 				genres.WriteString(", ")
 			}
-			genres.WriteString(genre.Name)
+			genres.WriteString("`" + genre.Name + "`")
 		}
 
 		genresBox := tview.NewTextView().
@@ -128,6 +136,23 @@ var searchCmd = &cobra.Command{
 
 		genresBox.SetBackgroundColor(tcell.ColorDefault).
 			SetTitle("Genres").
+			SetTitleColor(tcell.ColorGreenYellow).
+			SetTitleAlign(tview.AlignLeft).
+			SetBorder(true)
+
+		studios := strings.Builder{}
+		for i, studio := range animeDetails.Studios {
+			if i != 0 {
+				studios.WriteString(", ")
+			}
+			studios.WriteString("`" + studio.Name + "`")
+		}
+
+		studioBox := tview.NewTextView().
+			SetText(studios.String())
+
+		studioBox.SetBackgroundColor(tcell.ColorDefault).
+			SetTitle("Studios").
 			SetTitleColor(tcell.ColorGreenYellow).
 			SetTitleAlign(tview.AlignLeft).
 			SetBorder(true)
@@ -144,12 +169,17 @@ var searchCmd = &cobra.Command{
 
 		flex := tview.NewFlex().
 			AddItem(leftBox, 20, 1, false).
-			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-				AddItem(titleBox, 5, 1, false).
-				AddItem(synopsisBox, 0, 3, false).
-				AddItem(genresBox, 5, 1, false), 0, 2, false).
+			AddItem(
+				tview.NewFlex().SetDirection(tview.FlexRow).
+					AddItem(titleBox, 5, 1, false).
+					AddItem(synopsisBox, 0, 3, false).
+					AddItem(
+						tview.NewFlex().SetDirection(tview.FlexColumn).
+							AddItem(genresBox, 0, 2, false).
+							AddItem(studioBox, 0, 1, false), 0, 1, false), 0, 1, false).
 			AddItem(rightBox, 20, 1, false)
 
+		flex.SetTitle(cleanTitle)
 		if err := tview.NewApplication().SetRoot(flex, true).Run(); err != nil {
 			panic(err)
 		}
