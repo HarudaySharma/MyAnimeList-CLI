@@ -5,14 +5,10 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"os/exec"
-	"regexp"
 	"strings"
-
-	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
+u "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
-	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
@@ -31,12 +27,12 @@ var searchCmd = &cobra.Command{
 			}
 		} else {
 			query = strings.Join(args, " ")
-            query = strings.TrimSpace(query)
+			query = strings.TrimSpace(query)
 		}
 
 		encodedQuery := url.QueryEscape(query)
 		var animeList types.NativeAnimeList
-		err := utils.GetAnimeList(&animeList, encodedQuery, 100, 0, []es.AnimeDetailField{
+		err := u.GetAnimeList(&animeList, encodedQuery, 100, 0, []es.AnimeDetailField{
 			es.StartSeason,
 		})
 		if err != nil {
@@ -68,18 +64,15 @@ var searchCmd = &cobra.Command{
 			titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
 		}
 
-		fzf := exec.Command("fzf", "--no-sort", "--cycle", "--ansi", "+m")
-		fzf.Stdin = strings.NewReader(strings.Join(titleList, "\n"))
-
-		output, err := fzf.Output()
+		output, err := u.UseFzf(titleList)
 		if err != nil {
-			fmt.Printf("error using fzf \n %v", err)
+			fmt.Printf("error using fzf \n %v\n", err)
 			return
 		}
 
 		selectedTitle := strings.TrimSpace(string(output))
 		// Strip ANSI codes from selectedTitle to match the titleMap keys
-		cleanTitle := stripAnsi(strings.ReplaceAll(selectedTitle, "\t", " "))
+		cleanTitle := u.StripAnsi(strings.ReplaceAll(selectedTitle, "\t", " "))
 
 		animeId, found := titleMap[cleanTitle]
 		if !found {
@@ -87,111 +80,48 @@ var searchCmd = &cobra.Command{
 			return
 		}
 
-		var animeDetails types.NativeAnimeDetails
-		utils.GetAnimeDetails(&animeDetails, animeId, "custom", []es.AnimeDetailField{
+		detailFields := []es.AnimeDetailField{
 			es.Id, es.Title,
 			es.Synopsis,
 			es.AlternativeTitles,
 			es.Genres,
 			es.Studios,
-		})
-
-		alternativeTitles := strings.Builder{}
-		alternativeTitles.WriteString("EN:\t")
-		alternativeTitles.WriteString(fmt.Sprintln(animeDetails.AlternativeTitles.EN))
-		alternativeTitles.WriteString("JA:\t")
-		alternativeTitles.WriteString(fmt.Sprintln(animeDetails.AlternativeTitles.JA))
-
-		titleBox := tview.NewTextView().
-			SetText(alternativeTitles.String()).
-			SetTextAlign(tview.AlignLeft).
-			SetWrap(true)
-
-		titleBox.SetBackgroundColor(tcell.ColorDefault).
-			SetTitle("Title").
-			SetTitleAlign(tview.AlignLeft).
-			SetTitleColor(tcell.ColorLightCyan).
-			SetBorder(true)
-
-		synopsisBox := tview.NewTextView().
-			SetText(string(animeDetails.Synopsis)).
-			SetTextAlign(tview.AlignLeft).
-			SetWrap(true).
-			SetScrollable(true)
-
-		synopsisBox.SetBackgroundColor(tcell.ColorDefault).
-			SetTitle("Synopsis").
-			SetBorder(true)
-
-		genres := strings.Builder{}
-		for i, genre := range animeDetails.Genres {
-			if i != 0 {
-				genres.WriteString(", ")
-			}
-			genres.WriteString("`" + genre.Name + "`")
 		}
+		detailsIdxs, _ := cmd.Flags().GetIntSlice("d")
+		detailFields = append(detailFields, u.ConvertToDetailFields(detailsIdxs)...)
 
-		genresBox := tview.NewTextView().
-			SetText(genres.String())
+		var animeDetails types.NativeAnimeDetails
+		u.GetAnimeDetails(&animeDetails, animeId, "custom", detailFields)
 
-		genresBox.SetBackgroundColor(tcell.ColorDefault).
-			SetTitle("Genres").
-			SetTitleColor(tcell.ColorGreenYellow).
-			SetTitleAlign(tview.AlignLeft).
-			SetBorder(true)
-
-		studios := strings.Builder{}
-		for i, studio := range animeDetails.Studios {
-			if i != 0 {
-				studios.WriteString(", ")
-			}
-			studios.WriteString("`" + studio.Name + "`")
-		}
-
-		studioBox := tview.NewTextView().
-			SetText(studios.String())
-
-		studioBox.SetBackgroundColor(tcell.ColorDefault).
-			SetTitle("Studios").
-			SetTitleColor(tcell.ColorGreenYellow).
-			SetTitleAlign(tview.AlignLeft).
-			SetBorder(true)
-
-		leftBox := tview.NewBox().
-			SetTitle("Left (20 cols)").
-			SetBackgroundColor(tcell.ColorDefault).
-			SetBorder(true)
-
-		rightBox := tview.NewBox().
-			SetTitle("Right (20 cols)").
-			SetBackgroundColor(tcell.ColorDefault).
-			SetBorder(true)
-
-		flex := tview.NewFlex().
-			AddItem(leftBox, 20, 1, false).
-			AddItem(
-				tview.NewFlex().SetDirection(tview.FlexRow).
-					AddItem(titleBox, 5, 1, false).
-					AddItem(synopsisBox, 0, 3, false).
-					AddItem(
-						tview.NewFlex().SetDirection(tview.FlexColumn).
-							AddItem(genresBox, 0, 2, false).
-							AddItem(studioBox, 0, 1, false), 0, 1, false), 0, 1, false).
-			AddItem(rightBox, 20, 1, false)
-
-		flex.SetTitle(cleanTitle)
-		if err := tview.NewApplication().SetRoot(flex, true).Run(); err != nil {
+		animeDetailsFlexBox := u.AnimeDetailsFlexBox(&animeDetails, &detailFields)
+		if err := tview.NewApplication().SetRoot(animeDetailsFlexBox, true).EnableMouse(true).Run(); err != nil {
 			panic(err)
 		}
 	},
 }
 
-// Helper function to strip ANSI codes from a string
-func stripAnsi(str string) string {
-	re := regexp.MustCompile(`\x1b\[[0-9;]*m`)
-	return re.ReplaceAllString(str, "")
-}
-
 func init() {
+	searchCmd.PersistentFlags().IntSlice("d", []int{}, strings.TrimSpace(fmt.Sprintf(`
+        Specify which anime detail you want
+
+            Available Options:
+		        "Id", "Title", "MainPicture", "AlternativeTitles", "StartDate",
+		        "EndDate", "Synopsis", "Mean", "Rank", "Popularity",
+		        "NumListUsers", "NumScoringUsers", "Nsfw", "CreatedAt", "UpdatedAt",
+		        "MediaType", "Status", "Genres", "MyListStatus", "NumEpisodes",
+		        "StartSeason", "Broadcast", "Source", "AverageEpisodeDuration", "Rating",
+		        "Pictures", "Background", "RelatedAnime", "RelatedManga", "Recommendations",
+		        "Studios", "Statistics",
+
+            Note:
+                options value are from 0..31
+                    0 => Id
+                    .......
+                    31 => Statistics
+
+            Usage:
+                ani-cli search "anime title" --d=1,2,31
+                ani-cli search "anime title" --d 1,2,31
+        `)))
 	rootCmd.AddCommand(searchCmd)
 }

@@ -3,8 +3,8 @@
 #### all the public routes for MAL_CLI;
 
 - [x] GET anime list
-- [x] GET anime details 
-- [x] GET anime ranking 
+- [x] GET anime details
+- [x] GET anime ranking
 - [x] GET seasonal anime
 
 #### all the user routes for MAL_CLI;
@@ -31,7 +31,7 @@ complete the public routes handling and then create a client capable of requesti
 > [!NOTE]
 > Libraries for creating the terminal client
 > - cobra for all the functionality.
-> - tview for user interaction and data display. 
+> - tview for user interaction and data display.
 > - fzf (probably) for choosing from a list of data.
 
 
@@ -40,6 +40,5 @@ complete the public routes handling and then create a client capable of requesti
 ## Today's Task
 
 design how the user will use the script...
-- default script behaviour would be to search for anime.
-    - searching for an anime will give them with a fzf list. 
-- to be explicit about searching "mal-cli search "name" "
+- add some details flags
+- give user choice to explictly tell what specific details they want about the anime aside from the basic details
