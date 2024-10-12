@@ -6,7 +6,9 @@ import (
 	"net/url"
 	"os"
 	"strings"
-u "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
+
+	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/enums"
+	u "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 	"github.com/rivo/tview"
@@ -80,15 +82,11 @@ var searchCmd = &cobra.Command{
 			return
 		}
 
-		detailFields := []es.AnimeDetailField{
-			es.Id, es.Title,
-			es.Synopsis,
-			es.AlternativeTitles,
-			es.Genres,
-			es.Studios,
-		}
-		detailsIdxs, _ := cmd.Flags().GetIntSlice("d")
-		detailFields = append(detailFields, u.ConvertToDetailFields(detailsIdxs)...)
+        detailsIdxs, _ := cmd.Flags().GetIntSlice("d")
+
+		detailFields := make([]es.AnimeDetailField, 0)
+		detailFields = append(detailFields, *enums.DefaultDetailFields()...)
+		detailFields = append(detailFields, u.MapIndicesToDetailFields(detailsIdxs)...)
 
 		var animeDetails types.NativeAnimeDetails
 		u.GetAnimeDetails(&animeDetails, animeId, "custom", detailFields)
@@ -101,27 +99,34 @@ var searchCmd = &cobra.Command{
 }
 
 func init() {
+
+	availableOptions := u.ConvertToCommaSeperatedString(u.ConvertToCommaSeperatedStringParams[es.AnimeDetailField]{
+		Data:            es.EveryDetailField(),
+		MaxLineLen:      38,
+		SpaceAfterComma: true,
+	})
+	totalOptions := len(es.EveryDetailField())
+
 	searchCmd.PersistentFlags().IntSlice("d", []int{}, strings.TrimSpace(fmt.Sprintf(`
         Specify which anime detail you want
 
             Available Options:
-		        "Id", "Title", "MainPicture", "AlternativeTitles", "StartDate",
-		        "EndDate", "Synopsis", "Mean", "Rank", "Popularity",
-		        "NumListUsers", "NumScoringUsers", "Nsfw", "CreatedAt", "UpdatedAt",
-		        "MediaType", "Status", "Genres", "MyListStatus", "NumEpisodes",
-		        "StartSeason", "Broadcast", "Source", "AverageEpisodeDuration", "Rating",
-		        "Pictures", "Background", "RelatedAnime", "RelatedManga", "Recommendations",
-		        "Studios", "Statistics",
-
+                %s
             Note:
-                options value are from 0..31
-                    0 => Id
+                options value are from 0..%d
+                    0 => %s
                     .......
-                    31 => Statistics
+                    %d => %s
 
             Usage:
                 ani-cli search "anime title" --d=1,2,31
                 ani-cli search "anime title" --d 1,2,31
-        `)))
+        `,
+		availableOptions,
+		totalOptions-1,
+		es.EveryDetailField()[0],
+		totalOptions-1,
+		es.EveryDetailField()[totalOptions-1],
+	)))
 	rootCmd.AddCommand(searchCmd)
 }

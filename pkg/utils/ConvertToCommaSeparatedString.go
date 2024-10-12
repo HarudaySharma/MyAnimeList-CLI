@@ -19,5 +19,5 @@ func ConvertToCommaSeperatedString[T any](data []T) string {
 		}
 	}
 
-	return fieldsStr.String() 
+	return fieldsStr.String()
 }
