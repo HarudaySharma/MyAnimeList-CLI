@@ -45,12 +45,12 @@ type RelatedAnime struct {
 }
 
 type Broadcast struct {
-	DayOfTheWeek string `json:"day_of_the_week"`
-	StartTime    string `json:"start_time"`
+	DayOfTheWeek string `json:"day_of_the_week"` // in Japan time
+	StartTime    string `json:"start_time"`// 24 hrs format (not listed in docs)
 }
 
 type Statistics struct {
-	NumListUsers int `json:"num_list_users"`
+	NumListUsers int64 `json:"num_list_users"`
 	Status       struct {
 		Completed   string `json:"completed"`
 		Dropped     string `json:"dropped"`
@@ -83,7 +83,7 @@ type MALAnimeList struct {
 
 type MALAnimeDetails struct {
 	AlternativeTitles      AlternativeTitles `json:"alternative_titles"`
-	AverageEpisodeDuration int               `json:"average_episode_duration"`
+	AverageEpisodeDuration int64               `json:"average_episode_duration"`
 	Background             string            `json:"background"`
 	Broadcast              Broadcast         `json:"broadcast"`
 	CreatedAt              time.Time         `json:"created_at"`
@@ -95,8 +95,8 @@ type MALAnimeDetails struct {
 	MediaType              string            `json:"media_type"`
 	NSFW                   string            `json:"nsfw"`
 	NumEpisodes            int               `json:"num_episodes"`
-	NumListUsers           int               `json:"num_list_users"`
-	NumScoringUsers        int               `json:"num_scoring_users"`
+	NumListUsers           int64               `json:"num_list_users"`
+	NumScoringUsers        int64               `json:"num_scoring_users"`
 	Pictures               []Picture         `json:"pictures"`
 	Popularity             int               `json:"popularity"`
 	Rank                   int               `json:"rank"`
@@ -176,7 +176,7 @@ type NativeRelatedAnime struct {
 
 type NativeAnimeDetails struct {
 	AlternativeTitles      AlternativeTitles      `json:"alternative_titles"`
-	AverageEpisodeDuration int                    `json:"average_episode_duration"`
+	AverageEpisodeDuration int64                    `json:"average_episode_duration"` // in seconds
 	Background             string                 `json:"background"`
 	Broadcast              Broadcast              `json:"broadcast"`
 	CreatedAt              time.Time              `json:"created_at"`
@@ -188,8 +188,8 @@ type NativeAnimeDetails struct {
 	MediaType              string                 `json:"media_type"`
 	NSFW                   string                 `json:"nsfw"`
 	NumEpisodes            int                    `json:"num_episodes"`
-	NumListUsers           int                    `json:"num_list_users"`
-	NumScoringUsers        int                    `json:"num_scoring_users"`
+	NumListUsers           int64                    `json:"num_list_users"`
+	NumScoringUsers        int64                    `json:"num_scoring_users"`
 	Pictures               []Picture              `json:"pictures"`
 	Popularity             int                    `json:"popularity"`
 	Rank                   int                    `json:"rank"`

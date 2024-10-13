@@ -2,11 +2,14 @@ package ui
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	e "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/enums"
 	c "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/ui/components"
+	u "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -33,6 +36,62 @@ func (ui *AnimeDetailsUI) CreateTitle() *tview.TextView {
 	})
 
 	return titleBox
+}
+
+func (ui *AnimeDetailsUI) CreateStatus() *tview.TextView {
+	statusBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Status",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorIndianRed,
+		Text:       ui.Details.Status,
+		TextAlign:  tview.AlignCenter,
+	})
+
+	return statusBox
+}
+
+func (ui *AnimeDetailsUI) CreateNumEpisodes() *tview.TextView {
+	text := strings.Builder{}
+    text.WriteString("[" + tcell.ColorLightSkyBlue.String() + "]")
+
+	episodes := ui.Details.NumEpisodes
+	if episodes == 0 {
+		text.WriteString("Unknown")
+	} else {
+		text.WriteString(strconv.Itoa(episodes))
+	}
+	text.WriteString(" eps")
+    text.WriteString("[-]")
+
+	episodesBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Episodes",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorCadetBlue,
+		Text:       text.String(),
+		TextAlign:  tview.AlignCenter,
+	})
+
+	return episodesBox
+}
+
+func (ui *AnimeDetailsUI) CreateAverageEpisodeDuration() *tview.TextView {
+	duration := ui.Details.AverageEpisodeDuration / 60 // in minutes
+	durationStr := strings.Builder{}
+	durationStr.WriteString("[" + tcell.ColorLightSkyBlue.String() + "]")
+	durationStr.WriteString(strconv.FormatInt(duration, 10))
+	durationStr.WriteString(" min")
+    durationStr.WriteString("[-]")
+
+	durationBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Avg. Episode Duration",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorLightBlue,
+		Text:       durationStr.String(),
+		TextAlign:  tview.AlignCenter,
+	})
+
+	return durationBox
+
 }
 
 func (ui *AnimeDetailsUI) CreateSynopsis() *tview.TextView {
@@ -87,18 +146,6 @@ func (ui *AnimeDetailsUI) CreateStudios() *tview.TextView {
 	return studioBox
 }
 
-func (ui *AnimeDetailsUI) CreateAvgEpDuration() *tview.TextView {
-	durationBox := c.NewTextView(c.NewTextViewParams{
-		Title:      "Avg. Episode Duration",
-		TitleAlign: tview.AlignLeft,
-		TitleColor: tcell.ColorGreenYellow,
-		Text:       string(ui.Details.AverageEpisodeDuration),
-		TextAlign:  tview.AlignLeft,
-	})
-
-	return durationBox
-}
-
 func (ui *AnimeDetailsUI) CreateBackground() *tview.TextView {
 	backgroundBox := c.NewTextView(c.NewTextViewParams{
 		Title:      "Background",
@@ -111,15 +158,34 @@ func (ui *AnimeDetailsUI) CreateBackground() *tview.TextView {
 	return backgroundBox
 }
 
+func (ui *AnimeDetailsUI) CreateStartSeason() *tview.TextView {
+	s := ui.Details.StartSeason
+
+	text := strings.Builder{}
+	text.WriteString(s.Season)
+	text.WriteString(", ")
+	text.WriteString(strconv.Itoa(s.Year))
+
+	seasonBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Season",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       text.String(),
+		TextAlign:  tview.AlignLeft,
+	})
+
+	return seasonBox
+}
+
 func (ui *AnimeDetailsUI) CreateBroadcast() *tview.TextView {
 	broadcast := strings.Builder{}
-    dayOfTheWeek := strings.ReplaceAll(ui.Details.Broadcast.DayOfTheWeek, "\n", "")
-    airingTime := strings.ReplaceAll(ui.Details.Broadcast.StartTime, "\n", "")
+	dayOfTheWeek := strings.ReplaceAll(ui.Details.Broadcast.DayOfTheWeek, "\n", "")
+	airingTime := strings.ReplaceAll(ui.Details.Broadcast.StartTime, "\n", "")
 
-	broadcast.WriteString("Every " + dayOfTheWeek)
-	broadcast.WriteString(" : " + airingTime)
+	broadcast.WriteString("Every " + strings.ToUpper(dayOfTheWeek))
+	broadcast.WriteString(" [ " + airingTime + " ]")
 
-    fmt.Println(broadcast.String())
+	//fmt.Println(broadcast.String())
 	boradcastBox := c.NewTextView(c.NewTextViewParams{
 		Title:      "Broadcast",
 		TitleAlign: tview.AlignLeft,
@@ -127,59 +193,229 @@ func (ui *AnimeDetailsUI) CreateBroadcast() *tview.TextView {
 		Text:       broadcast.String(),
 		TextAlign:  tview.AlignLeft,
 	})
-    boradcastBox.SetSize(5, 10)
+	boradcastBox.SetSize(5, 40)
 
 	return boradcastBox
 }
 
-/*
-	CreatedAt              time.Time              `json:"created_at"`
-	EndDate                string                 `json:"end_date"`
-	ID                     int                    `json:"id"`
-	MainPicture            Picture                `json:"main_picture"`
-	Mean                   float64                `json:"mean"`
-	MediaType              string                 `json:"media_type"`
-	NSFW                   string                 `json:"nsfw"`
-	NumEpisodes            int                    `json:"num_episodes"`
-	NumListUsers           int                    `json:"num_list_users"`
-	NumScoringUsers        int                    `json:"num_scoring_users"`
-	Pictures               []Picture              `json:"pictures"`
-	Popularity             int                    `json:"popularity"`
-	Rank                   int                    `json:"rank"`
-	Rating                 string                 `json:"rating"`
-	Recommendations        []NativeRecommendation `json:"recommendations"`
-	RelatedAnime           []NativeRelatedAnime   `json:"related_anime"`
-	Source                 string                 `json:"source"`
-	StartDate              string                 `json:"start_date"`
-	StartSeason            struct {
-		Season string `json:"season"`
-		Year   int    `json:"year"`
-	} `json:"start_season"`
-	Statistics Statistics `json:"statistics"`
-	Status     string     `json:"status"`
-	UpdatedAt  time.Time  `json:"updated_at"` */
+func (ui *AnimeDetailsUI) CreateMediaType() *tview.TextView {
+	mediatype := c.NewTextView(c.NewTextViewParams{
+		Title:      "Media-Type",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       ui.Details.MediaType,
+		TextAlign:  tview.AlignLeft,
+	})
+
+	return mediatype
+}
+
+/*will show both NumListUsers & NumScoringUsers
+ */
+func (ui *AnimeDetailsUI) CreateUsersCount() *tview.TextView {
+	listUsers := ui.Details.NumListUsers
+	scoringUsers := ui.Details.NumScoringUsers
+
+	text := strings.Builder{}
+	text.WriteString("Total Users: ")
+	text.WriteString("[red]")
+	text.WriteString(u.FormatNumberWithSeparator(listUsers, ","))
+	text.WriteString("[-]")
+	text.WriteString("\n")
+	text.WriteString("Total ScoringUsers: ")
+	text.WriteString("[red]")
+	text.WriteString(u.FormatNumberWithSeparator(scoringUsers, ","))
+	text.WriteString("[-]")
+
+	usersCountBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Users Count",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       text.String(),
+		TextAlign:  tview.AlignCenter,
+	})
+
+    usersCountBox.SetDynamicColors(true)
+
+	return usersCountBox
+}
+
+func (ui *AnimeDetailsUI) CreateRating() *tview.TextView {
+	rating := ui.Details.Rating
+
+	text := strings.Builder{}
+	text.WriteString(enums.RatingMap()[rating])
+
+	ratingBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Rating",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       text.String(),
+		TextAlign:  tview.AlignLeft,
+	})
+
+	return ratingBox
+}
+
+func (ui *AnimeDetailsUI) CreateRank() *tview.TextView {
+	rank := ui.Details.Rank
+
+	text := strings.Builder{}
+	text.WriteString(u.FormatNumberWithSeparator(int64(rank), ","))
+
+	rankBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Rank",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       text.String(),
+		TextAlign:  tview.AlignLeft,
+	})
+
+	return rankBox
+}
+
+func (ui *AnimeDetailsUI) CreatePopularity() *tview.TextView {
+	popularity := ui.Details.Popularity
+
+	text := strings.Builder{}
+	text.WriteString(u.FormatNumberWithSeparator(int64(popularity), ","))
+
+	popularityBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Popularity",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       text.String(),
+		TextAlign:  tview.AlignLeft,
+	})
+
+	return popularityBox
+}
+
+func (ui *AnimeDetailsUI) CreateStatistics() *tview.Flex {
+	stats := ui.Details.Statistics
+
+	text := strings.Builder{}
+	text.WriteString("Watching: ")
+	text.WriteString("[red]")
+	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.Watching, ","))
+	text.WriteString("[-]")
+	text.WriteString("\n")
+	text.WriteString("Completed: ")
+	text.WriteString("[red]")
+	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.Completed, ","))
+	text.WriteString("[-]")
+	text.WriteString("\n")
+	text.WriteString("On Hold: ")
+	text.WriteString("[red]")
+	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.OnHold, ","))
+	text.WriteString("[-]")
+	text.WriteString("\n")
+	text.WriteString("Dropped: ")
+    text.WriteString("[red]")
+	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.Dropped, ","))
+    text.WriteString("[-]")
+	text.WriteString("\n")
+	text.WriteString("Plan to Watch: ")
+    text.WriteString("[red]")
+	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.PlanToWatch, ","))
+    text.WriteString("[-]")
+
+	statusBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Status",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       text.String(),
+		TextAlign:  tview.AlignCenter,
+	})
+	statusBox.SetDynamicColors(true)
+
+	totalUsersBox := c.NewTextView(c.NewTextViewParams{
+		Title:      "Total Users",
+		TitleAlign: tview.AlignCenter,
+		TitleColor: tcell.ColorGreenYellow,
+		Text:       "Total Users: " + "[red]" + u.FormatNumberWithSeparator(stats.NumListUsers, ",") + "[-]",
+		TextAlign:  tview.AlignCenter,
+	})
+	totalUsersBox.SetBorder(false)
+
+	statisticsBox := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(totalUsersBox, 2, 1, false).
+		AddItem(statusBox, 6, 4, false)
+
+	statisticsBox.SetTitle("Statistics")
+	statisticsBox.SetBorder(true).SetBorderPadding(2, 0, 0, 0)
+
+	return statisticsBox
+}
 
 // TODO: work on this
 func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 	// aggregrate of all the user defined anime detail fields
 	additionalInfobox := tview.NewFlex().SetDirection(tview.FlexRow)
-	additionalInfobox.SetTitle("Additional Information")
-	// All the other detail fields will be added dynamically
-	fmt.Print(ui.DetailFields)
+
+	additionalInfobox.SetBorder(true).SetTitle("Additional Information")
+
+	newRow := tview.NewFlex().SetDirection(tview.FlexColumn)
+	nextRow := 0.0
+
 	for _, field := range *(ui.DetailFields) {
 		// all the default details should be skipped
 		if isDefault, _ := (*e.DefaultDetailFieldsMap())[field]; isDefault == true {
 			continue
 		}
 
-		box := c.NewTextView(c.NewTextViewParams{
-			Title:      string(field),
-			TitleAlign: tview.AlignCenter,
-			TitleColor: tcell.ColorMistyRose,
-			Text:       "", // TODO: need to create handler for each possible field
-			TextAlign:  tview.AlignCenter,
-		})
-		additionalInfobox.AddItem(box, 0, 1, false)
+		var textView *tview.TextView
+		var flexBox *tview.Flex
+
+		switch field {
+		case es.Background:
+			textView = ui.CreateBackground()
+			nextRow += 1.5
+		case es.StartSeason:
+			textView = ui.CreateStartSeason()
+			nextRow += 1.5
+		case es.Broadcast:
+			textView = ui.CreateBroadcast()
+			nextRow += 1
+		case es.MediaType:
+			textView = ui.CreateMediaType()
+			nextRow += 1.2
+        // NOTE: this is dumb
+		case es.NumListUsers:
+            if ui.Details.NumListUsers != 0 && ui.Details.NumScoringUsers != 0 {
+                textView = ui.CreateUsersCount()
+            }
+			nextRow += 1
+		case es.Rating:
+			textView = ui.CreateRating()
+			nextRow += 2
+		case es.Rank:
+			textView = ui.CreateRank()
+			nextRow += 1.5
+		case es.Popularity:
+			textView = ui.CreatePopularity()
+			nextRow += 1.5
+		case es.Statistics:
+			flexBox = ui.CreateStatistics()
+			nextRow += 3
+		}
+
+		if flexBox != nil {
+			newRow.AddItem(flexBox, 0, 1, false)
+		}
+		if textView != nil {
+			newRow.AddItem(textView, 0, 1, false)
+		}
+
+		if nextRow >= 5 {
+			additionalInfobox.AddItem(newRow, 0, 1, false)
+			newRow = tview.NewFlex().SetDirection(tview.FlexColumn)
+			nextRow = 0.0
+		}
+	}
+
+	if nextRow != 0.0 {
+		additionalInfobox.AddItem(newRow, 0, 1, false)
 	}
 
 	return additionalInfobox
@@ -190,15 +426,42 @@ func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
 		AddItem(
 			tview.NewFlex().SetDirection(tview.FlexRow).
 				AddItem(ui.CreateTitle(), 5, 1, false).
+				AddItem(
+					tview.NewFlex().SetDirection(tview.FlexColumn).
+						AddItem(ui.CreateStatus(), 0, 1, false).
+						AddItem(ui.CreateNumEpisodes(), 0, 1, false).
+						AddItem(ui.CreateAverageEpisodeDuration(), 0, 1, false), 3, 1, false).
+				AddItem(ui.CreateGenres(), 3, 1, false).
 				AddItem(ui.CreateSynopsis(), 0, 3, false).
 				AddItem(
 					tview.NewFlex().SetDirection(tview.FlexColumn).
-						AddItem(ui.CreateGenres(), 0, 1, false).
-						AddItem(ui.CreateStudios(), 0, 1, false).
-						AddItem(ui.CreateBroadcast(), 0, 2, false), 0, 1, false), 0, 1, false).
+						AddItem(ui.CreateStudios(), 0, 1, false), 3, 1, false), 0, 1, false).
 		AddItem(ui.CreateAdditionalInfo(), 0, 1, false)
 
-	layout.SetTitle("Anime Details")
+		//layout.SetBorder(true).SetTitle("Anime Details")
 
 	return layout
 }
+
+/* TODO: Pending Constructors
+
+	ID                     int                    `json:"id"`
+	Source                 string                 `json:"source"`
+
+	CreatedAt              time.Time              `json:"created_at"`
+    UpdatedAt              time.Time              `json:"updated_at"`
+
+	StartDate              string                 `json:"start_date"`
+	EndDate                string                 `json:"end_date"`
+
+	MainPicture            Picture                `json:"main_picture"`
+	Pictures               []Picture              `json:"pictures"`
+
+	Mean                   float64                `json:"mean"`
+	NSFW                   string                 `json:"nsfw"`
+
+	Recommendations        []NativeRecommendation `json:"recommendations"`
+	RelatedAnime           []NativeRelatedAnime   `json:"related_anime"`
+
+*/
+

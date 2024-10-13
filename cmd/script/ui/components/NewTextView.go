@@ -18,7 +18,8 @@ func NewTextView(p NewTextViewParams) *tview.TextView {
 		SetText(p.Text).
 		SetTextAlign(p.TextAlign).
 		SetWrap(true).
-        SetScrollable(true)
+		SetScrollable(true).
+		SetDynamicColors(true)
 
 	textView.SetBackgroundColor(tcell.ColorDefault).
 		SetTitle(p.Title).

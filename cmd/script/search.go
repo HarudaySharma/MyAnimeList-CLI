@@ -35,7 +35,14 @@ var searchCmd = &cobra.Command{
 
 		encodedQuery := url.QueryEscape(query)
 		var animeList types.NativeAnimeList
-		err := u.GetAnimeList(&animeList, encodedQuery, 100, 0, []es.AnimeDetailField{
+
+		limit, err := cmd.Flags().GetInt("l")
+		if err != nil {
+			fmt.Println("limit flag messed up")
+			panic(err)
+		}
+
+		err = u.GetAnimeList(&animeList, encodedQuery, limit, 0, []es.AnimeDetailField{
 			es.StartSeason,
 		})
 		if err != nil {
@@ -111,6 +118,11 @@ func init() {
 		SpaceAfterComma: true,
 	})
 	totalOptions := len(es.EveryDetailField())
+
+	searchCmd.PersistentFlags().Int("l", 10, strings.TrimSpace(fmt.Sprintf(`
+        Specify length of anime list { 1 - 100 }
+        `,
+	)))
 
 	searchCmd.PersistentFlags().IntSlice("d", []int{}, strings.TrimSpace(fmt.Sprintf(`
         Specify which anime detail you want

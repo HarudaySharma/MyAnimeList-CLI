@@ -17,6 +17,7 @@ func init() {
 	defaultDetailFields = []es.AnimeDetailField{
 		es.Id, es.AlternativeTitles, es.Title,
 		es.Synopsis, es.Genres, es.Studios,
+        es.Status, es.NumEpisodes, es.AverageEpisodeDuration,
 	}
 
 	defaultDetailFieldsMap = make(map[es.AnimeDetailField]bool)
