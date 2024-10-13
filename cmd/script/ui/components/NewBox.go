@@ -1,4 +1,4 @@
-package utils
+package components
 
 import (
 	"github.com/gdamore/tcell/v2"

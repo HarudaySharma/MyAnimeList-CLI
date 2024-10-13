@@ -313,7 +313,6 @@ func GETSeasonalAnime(w http.ResponseWriter, r *http.Request) {
 
     // VALIDATE THE YEAR TOO
 
-   
 
 
 	// ****QUERY PARAMS****

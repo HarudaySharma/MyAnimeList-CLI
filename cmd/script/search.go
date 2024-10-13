@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/ui"
 	u "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
@@ -82,7 +83,7 @@ var searchCmd = &cobra.Command{
 			return
 		}
 
-        detailsIdxs, _ := cmd.Flags().GetIntSlice("d")
+		detailsIdxs, _ := cmd.Flags().GetIntSlice("d")
 
 		detailFields := make([]es.AnimeDetailField, 0)
 		detailFields = append(detailFields, *enums.DefaultDetailFields()...)
@@ -91,8 +92,12 @@ var searchCmd = &cobra.Command{
 		var animeDetails types.NativeAnimeDetails
 		u.GetAnimeDetails(&animeDetails, animeId, "custom", detailFields)
 
-		animeDetailsFlexBox := u.AnimeDetailsFlexBox(&animeDetails, &detailFields)
-		if err := tview.NewApplication().SetRoot(animeDetailsFlexBox, true).EnableMouse(true).Run(); err != nil {
+		animeDetailsUI := ui.AnimeDetailsUI{
+			Details:      &animeDetails,
+			DetailFields: &detailFields,
+		}
+
+		if err := tview.NewApplication().SetRoot(animeDetailsUI.CreateLayout(), true).EnableMouse(true).Run(); err != nil {
 			panic(err)
 		}
 	},
