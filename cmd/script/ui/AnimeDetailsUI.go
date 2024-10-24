@@ -52,7 +52,7 @@ func (ui *AnimeDetailsUI) CreateStatus() *tview.TextView {
 
 func (ui *AnimeDetailsUI) CreateNumEpisodes() *tview.TextView {
 	text := strings.Builder{}
-    text.WriteString("[" + tcell.ColorLightSkyBlue.String() + "]")
+	text.WriteString("[" + tcell.ColorLightSkyBlue.String() + "]")
 
 	episodes := ui.Details.NumEpisodes
 	if episodes == 0 {
@@ -61,7 +61,7 @@ func (ui *AnimeDetailsUI) CreateNumEpisodes() *tview.TextView {
 		text.WriteString(strconv.Itoa(episodes))
 	}
 	text.WriteString(" eps")
-    text.WriteString("[-]")
+	text.WriteString("[-]")
 
 	episodesBox := c.NewTextView(c.NewTextViewParams{
 		Title:      "Episodes",
@@ -80,7 +80,7 @@ func (ui *AnimeDetailsUI) CreateAverageEpisodeDuration() *tview.TextView {
 	durationStr.WriteString("[" + tcell.ColorLightSkyBlue.String() + "]")
 	durationStr.WriteString(strconv.FormatInt(duration, 10))
 	durationStr.WriteString(" min")
-    durationStr.WriteString("[-]")
+	durationStr.WriteString("[-]")
 
 	durationBox := c.NewTextView(c.NewTextViewParams{
 		Title:      "Avg. Episode Duration",
@@ -235,7 +235,7 @@ func (ui *AnimeDetailsUI) CreateUsersCount() *tview.TextView {
 		TextAlign:  tview.AlignCenter,
 	})
 
-    usersCountBox.SetDynamicColors(true)
+	usersCountBox.SetDynamicColors(true)
 
 	return usersCountBox
 }
@@ -311,14 +311,14 @@ func (ui *AnimeDetailsUI) CreateStatistics() *tview.Flex {
 	text.WriteString("[-]")
 	text.WriteString("\n")
 	text.WriteString("Dropped: ")
-    text.WriteString("[red]")
+	text.WriteString("[red]")
 	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.Dropped, ","))
-    text.WriteString("[-]")
+	text.WriteString("[-]")
 	text.WriteString("\n")
 	text.WriteString("Plan to Watch: ")
-    text.WriteString("[red]")
+	text.WriteString("[red]")
 	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.PlanToWatch, ","))
-    text.WriteString("[-]")
+	text.WriteString("[-]")
 
 	statusBox := c.NewTextView(c.NewTextViewParams{
 		Title:      "Status",
@@ -380,11 +380,11 @@ func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 		case es.MediaType:
 			textView = ui.CreateMediaType()
 			nextRow += 1.2
-        // NOTE: this is dumb
+			// NOTE: this is dumb
 		case es.NumListUsers:
-            if ui.Details.NumListUsers != 0 && ui.Details.NumScoringUsers != 0 {
-                textView = ui.CreateUsersCount()
-            }
+			if ui.Details.NumListUsers != 0 && ui.Details.NumScoringUsers != 0 {
+				textView = ui.CreateUsersCount()
+			}
 			nextRow += 1
 		case es.Rating:
 			textView = ui.CreateRating()
@@ -464,4 +464,3 @@ func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
 	RelatedAnime           []NativeRelatedAnime   `json:"related_anime"`
 
 */
-

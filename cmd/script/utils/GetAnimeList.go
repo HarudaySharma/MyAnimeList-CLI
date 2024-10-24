@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/enums"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
@@ -11,11 +12,12 @@ import (
 )
 
 func GetAnimeList[T any](animeList *T, query string, limit, offset int, fields []es.AnimeDetailField) error {
+    encodedQuery := url.QueryEscape(query)
 	fieldsStr := u.ConvertToCommaSeperatedString(fields)
 
 	url := fmt.Sprintf("%s/anime-list?q=%s&limit=%v&offset=%v&fields=%v",
 		enums.API_URL,
-		query,
+		encodedQuery,
 		limit,
 		offset,
 		fieldsStr,
@@ -23,7 +25,7 @@ func GetAnimeList[T any](animeList *T, query string, limit, offset int, fields [
 
 	res, err := http.Get(url)
 	if err != nil {
-		panic("error getting anime list")
+		return fmt.Errorf("%v\n****ERROR GETTING ANIME LIST FROM SERVER****", err)
 	}
 
 	if err := json.NewDecoder(res.Body).Decode(animeList); err != nil {
