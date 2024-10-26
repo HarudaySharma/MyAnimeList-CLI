@@ -47,8 +47,14 @@ var searchCmd = &cobra.Command{
 				}
 
 				if animeId == -1 {
-					err := u.GetAnimeList(&animeList, query, limit, offset, []es.AnimeDetailField{
-						es.StartSeason,
+					err := u.GetAnimeList(u.GetAnimeListParams[types.NativeAnimeList]{
+						AnimeList: &animeList,
+						Query:     query,
+						Limit:     limit,
+						Offset:    offset,
+						Fields: []es.AnimeDetailField{
+							es.StartSeason,
+						},
 					})
 					if err != nil {
 						fmt.Printf("%v\n****ERROR GETTING ANIMELIST**** ", err)
@@ -84,7 +90,12 @@ var searchCmd = &cobra.Command{
 			detailFields = append(detailFields, u.MapIndicesToDetailFields(detailsIdxs)...)
 
 			var animeDetails types.NativeAnimeDetails
-			u.GetAnimeDetails(&animeDetails, animeId, "custom", detailFields)
+			u.GetAnimeDetails(u.GetAnimeDetailsParams[types.NativeAnimeDetails]{
+				AnimeDetails: &animeDetails,
+				AnimeId:      animeId,
+				DetailType:   "custom",
+				Fields:       detailFields,
+			})
 
 			animeDetailsUI := ui.AnimeDetailsUI{
 				Details:      &animeDetails,

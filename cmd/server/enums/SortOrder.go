@@ -5,8 +5,8 @@ import "strings"
 type SortOption string
 
 const (
-	AnimeScore        SortOption = "anime_score"
-	AnimeNumListUsers SortOption = "anime_num_list_users"
+	SortByAnimeScore        SortOption = "anime_score"
+	SortByAnimeNumListUsers SortOption = "anime_num_list_users"
 )
 
 var sortOptions []SortOption
@@ -39,8 +39,8 @@ func ParseSortOptions(options []string) ([]SortOption, bool) {
 
 func init() {
 	sortOptions = []SortOption{
-		AnimeNumListUsers,
-		AnimeScore,
+		SortByAnimeNumListUsers,
+		SortByAnimeScore,
 	}
 
 	sortOptionsMap = make(map[string]SortOption)

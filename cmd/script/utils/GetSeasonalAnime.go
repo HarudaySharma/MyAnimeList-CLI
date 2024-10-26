@@ -11,17 +11,34 @@ import (
 	u "github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 )
 
-//- ROUTE: /api/anime/season/{year}/{season}?limit?offset?sort?fields
-func GetSeasonalAnime[T any](animeList *T,  year int, season string, limit, offset int, fields []es.AnimeDetailField) error {
-	fieldsStr := u.ConvertToCommaSeperatedString(fields)
-    var seasonalAnime *types.NativeSeasonalAnime
+type GetSeasonalAnimeParams[T types.NativeSeasonalAnime | types.NativeAnimeList] struct {
+	AnimeList           *T
+	Year                int
+	Season              string
+	Limit, Offset, Sort int
+	Fields              []es.AnimeDetailField
+}
 
-	url := fmt.Sprintf("%s/anime/seasonal/%d/%s?limit=%v&offset=%v&fields=%v",
+func GetSeasonalAnime[T types.NativeSeasonalAnime | types.NativeAnimeList](p GetSeasonalAnimeParams[T]) error {
+	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
+
+	sortOption := string(es.SortOptions()[p.Sort])
+	parsedSortOptions, invalidFound := es.ParseSortOptions([]string{
+		sortOption,
+	})
+
+	if invalidFound {
+		return fmt.Errorf("Invalid Sort Option {%v}", sortOption)
+	}
+
+	// - ROUTE: /api/anime/season/{year}/{season}?limit?offset?sort?fields
+	url := fmt.Sprintf("%s/anime/seasonal/%d/%s?limit=%v&offset=%v&sort=%s&fields=%v",
 		enums.API_URL,
-		year,
-		season,
-		limit,
-		offset,
+		p.Year,
+		p.Season,
+		p.Limit,
+		p.Offset,
+		parsedSortOptions[0],
 		fieldsStr,
 	)
 
@@ -30,12 +47,9 @@ func GetSeasonalAnime[T any](animeList *T,  year int, season string, limit, offs
 		return fmt.Errorf("%v\n****ERROR GETTING SEASONAL ANIME LIST FROM SERVER****", err)
 	}
 
-	if err := json.NewDecoder(res.Body).Decode(seasonalAnime); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(p.AnimeList); err != nil {
 		return fmt.Errorf("Json parsing error of anime-list \n %v", err)
 	}
-
-    bt, _ := json.MarshalIndent(seasonalAnime, "", "\t")
-    fmt.Println(string(bt))
 
 	return nil
 }

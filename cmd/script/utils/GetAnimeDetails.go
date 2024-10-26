@@ -6,18 +6,26 @@ import (
 	"net/http"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 )
 
-func GetAnimeDetails[T any](animeDetails *T, animeId int, detailType string, fields []es.AnimeDetailField) error {
-	fieldsStr := utils.ConvertToCommaSeperatedString(fields)
+type GetAnimeDetailsParams[T types.AnimeDetails] struct {
+	AnimeDetails *T
+	AnimeId      int
+	DetailType   string
+	Fields       []es.AnimeDetailField
+}
+
+func GetAnimeDetails[T types.AnimeDetails](p GetAnimeDetailsParams[T]) error {
+	fieldsStr := utils.ConvertToCommaSeperatedString(p.Fields)
 
 	url := fmt.Sprintf("%s/anime/%d?detail_type=%s&fields=%s",
 		enums.API_URL,
-		animeId,
-		detailType,
+		p.AnimeId,
+		p.DetailType,
 		fieldsStr,
 	)
 
@@ -26,7 +34,7 @@ func GetAnimeDetails[T any](animeDetails *T, animeId int, detailType string, fie
 		panic("error getting anime list")
 	}
 
-	if err := json.NewDecoder(res.Body).Decode(animeDetails); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(p.AnimeDetails); err != nil {
 		return fmt.Errorf("Json parsing error of animeDetails \n %v", err)
 	}
 

@@ -36,14 +36,29 @@ var seasonalCmd = &cobra.Command{
 			season = string(u.CurrentAnimeSeason())
 		}
 
-		var animeList types.NativeAnimeList
+		sortBy, err := cmd.Flags().GetInt("sort")
+		if err != nil {
+			sortBy = 0
+		}
+
+		var animeList *types.NativeAnimeList
 		var animeId int = -1 // will send a request to server every time it is "-1"
 		for {
 			for {
 
 				if animeId == -1 {
-					err := u.GetSeasonalAnime(&animeList, year, season, limit, offset, []es.AnimeDetailField{
-						es.StartSeason,
+					var seasonalAnimeList types.NativeSeasonalAnime
+
+					err := u.GetSeasonalAnime(u.GetSeasonalAnimeParams[types.NativeSeasonalAnime]{
+						AnimeList: &seasonalAnimeList,
+						Year:      year,
+						Season:    season,
+						Limit:     limit,
+						Offset:    offset,
+						Sort:      sortBy,
+						Fields: []es.AnimeDetailField{
+							es.StartSeason,
+						},
 					})
 					if err != nil {
 						fmt.Printf("%v\n****ERROR IN SEASONAL ANIME**** ", err)
@@ -51,9 +66,11 @@ var seasonalCmd = &cobra.Command{
 						//TODO: be more fault tolerant
 						os.Exit(1)
 					}
+
+					animeList = u.SeasonalToNativeAnimeList(&seasonalAnimeList)
 				}
 
-				animeId, err = u.FzfAnimeList(&animeList, limit, &offset)
+				animeId, err = u.FzfAnimeList(animeList, limit, &offset)
 				if err != nil {
 					if strings.Contains(err.Error(), "130") { // 130 for ESC in FZF
 						os.Exit(0)
@@ -80,7 +97,12 @@ var seasonalCmd = &cobra.Command{
 			detailFields = append(detailFields, u.MapIndicesToDetailFields(detailsIdxs)...)
 
 			var animeDetails types.NativeAnimeDetails
-			u.GetAnimeDetails(&animeDetails, animeId, "custom", detailFields)
+			u.GetAnimeDetails(u.GetAnimeDetailsParams[types.NativeAnimeDetails]{
+				AnimeDetails: &animeDetails,
+				AnimeId:      animeId,
+				DetailType:   "custom",
+				Fields:       detailFields,
+			})
 
 			animeDetailsUI := ui.AnimeDetailsUI{
 				Details:      &animeDetails,
@@ -101,6 +123,7 @@ func init() {
 	currentYear := time.Now().Year()
 	seasonalCmd.PersistentFlags().Int("year", currentYear, strings.TrimSpace(fmt.Sprintf(`
         Specify which Year's seasonal anime you want
+
         Default Value: Current Year
         `,
 	)))
@@ -119,10 +142,24 @@ func init() {
         Specify which season's anime you want
             Available seasons: %s
 
-
         Default Value: Current Season
         `,
 		availableSeasonsStr.String(),
+	)))
+
+	// option: --sort
+	sortOptionsStr := strings.Builder{}
+	sortOptionsStr.WriteString("\n\t\t")
+	for i, option := range es.SortOptions() {
+		sortOptionsStr.WriteString(fmt.Sprintf("%d => %s", i, option))
+		sortOptionsStr.WriteString("\n\t\t")
+	}
+	seasonalCmd.PersistentFlags().Int("sort", 0, strings.TrimSpace(fmt.Sprintf(`
+        On what basis the list should be sorted
+
+            Available Options: %s
+        `,
+		sortOptionsStr.String(),
 	)))
 
 	// option: --l
@@ -146,6 +183,7 @@ func init() {
             Usage:
                 ani-cli search "anime title" --d=1,2,31
                 ani-cli search "anime title" --d 1,2,31
+
         `,
 		availableOptionsStr.String(),
 	)))
