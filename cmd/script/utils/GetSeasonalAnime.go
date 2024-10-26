@@ -31,6 +31,8 @@ func GetSeasonalAnime[T types.NativeSeasonalAnime | types.NativeAnimeList](p Get
 		return fmt.Errorf("Invalid Sort Option {%v}", sortOption)
 	}
 
+    //TODO: validate Year and Season
+
 	// - ROUTE: /api/anime/season/{year}/{season}?limit?offset?sort?fields
 	url := fmt.Sprintf("%s/anime/seasonal/%d/%s?limit=%v&offset=%v&sort=%s&fields=%v",
 		enums.API_URL,

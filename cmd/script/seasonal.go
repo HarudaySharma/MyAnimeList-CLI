@@ -21,7 +21,7 @@ var seasonalCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		offset := 0
-		limit, err := cmd.Flags().GetInt("l")
+		limit, err := rootCmd.Flags().GetInt("list-size")
 		if err != nil {
 			limit = 10 // don't panic
 		}
@@ -38,7 +38,7 @@ var seasonalCmd = &cobra.Command{
 
 		sortBy, err := cmd.Flags().GetInt("sort")
 		if err != nil {
-			sortBy = 0
+			sortBy = 1 // anime_score
 		}
 
 		var animeList *types.NativeAnimeList
@@ -90,7 +90,7 @@ var seasonalCmd = &cobra.Command{
 				break
 			}
 
-			detailsIdxs, _ := cmd.Flags().GetIntSlice("d")
+			detailsIdxs, _ := cmd.Flags().GetIntSlice("details")
 
 			detailFields := make([]es.AnimeDetailField, 0)
 			detailFields = append(detailFields, *e.DefaultDetailFields()...)
@@ -118,10 +118,9 @@ var seasonalCmd = &cobra.Command{
 }
 
 func init() {
-
 	// option: --year
 	currentYear := time.Now().Year()
-	seasonalCmd.PersistentFlags().Int("year", currentYear, strings.TrimSpace(fmt.Sprintf(`
+	seasonalCmd.PersistentFlags().IntP("year", "y", currentYear, strings.TrimSpace(fmt.Sprintf(`
         Specify which Year's seasonal anime you want
 
         Default Value: Current Year
@@ -138,7 +137,7 @@ func init() {
 
 	// get the current season
 	currentSeason := u.CurrentAnimeSeason()
-	seasonalCmd.PersistentFlags().String("season", string(currentSeason), strings.TrimSpace(fmt.Sprintf(`
+	seasonalCmd.PersistentFlags().StringP("season", "s", string(currentSeason), strings.TrimSpace(fmt.Sprintf(`
         Specify which season's anime you want
             Available seasons: %s
 
@@ -154,18 +153,12 @@ func init() {
 		sortOptionsStr.WriteString(fmt.Sprintf("%d => %s", i, option))
 		sortOptionsStr.WriteString("\n\t\t")
 	}
-	seasonalCmd.PersistentFlags().Int("sort", 0, strings.TrimSpace(fmt.Sprintf(`
+	seasonalCmd.PersistentFlags().Int("sort", 1, strings.TrimSpace(fmt.Sprintf(`
         On what basis the list should be sorted
 
             Available Options: %s
         `,
 		sortOptionsStr.String(),
-	)))
-
-	// option: --l
-	seasonalCmd.PersistentFlags().Int("l", 10, strings.TrimSpace(fmt.Sprintf(`
-        Specify length of anime list { 1 - 100 }
-        `,
 	)))
 
 	// option: --d
@@ -176,17 +169,21 @@ func init() {
 		availableOptionsStr.WriteString("\n\t\t")
 	}
 
-	seasonalCmd.PersistentFlags().IntSlice("d", []int{}, strings.TrimSpace(fmt.Sprintf(`
+	seasonalCmd.PersistentFlags().IntSliceP("details", "d", []int{}, strings.TrimSpace(fmt.Sprintf(`
         Specify which anime detail you want
 
             Available Options: %s
-            Usage:
-                ani-cli search "anime title" --d=1,2,31
-                ani-cli search "anime title" --d 1,2,31
-
         `,
 		availableOptionsStr.String(),
 	)))
+
+	seasonalCmd.Example = fmt.Sprintf(`
+        ani-cli seasonal -y %d -s %s -d=1,2,31
+        ani-cli seasonal -y %d -s %s -d 1,2,31
+        `,
+		currentYear, string(currentSeason),
+		currentYear, string(currentSeason),
+	)
 
 	rootCmd.AddCommand(seasonalCmd)
 }

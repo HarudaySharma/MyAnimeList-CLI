@@ -3,6 +3,7 @@ package script
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -10,8 +11,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "mal-cli",
 	Short: "Search about anime from terminal",
-	Long:  `Access MyAnimList api from terminal`,
-	Run: searchCmd.Run,
+	Long:  `Access MyAnimeList api from terminal`,
 }
 
 func Execute() {
@@ -22,3 +22,10 @@ func Execute() {
 }
 
 
+func init () {
+	// option: --list-size
+	rootCmd.PersistentFlags().IntP("list-size", "l", 10, strings.TrimSpace(fmt.Sprintf(`
+        Specify length of anime list { 1 - 100 }
+        `,
+	)))
+}

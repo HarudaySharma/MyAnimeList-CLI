@@ -27,7 +27,7 @@ var searchCmd = &cobra.Command{
 		}
 
 		offset := 0
-		limit, err := cmd.Flags().GetInt("l")
+		limit, err := rootCmd.Flags().GetInt("list-size")
 		if err != nil {
 			limit = 10 // don't panic
 		}
@@ -83,7 +83,7 @@ var searchCmd = &cobra.Command{
 				break
 			}
 
-			detailsIdxs, _ := cmd.Flags().GetIntSlice("d")
+			detailsIdxs, _ := cmd.Flags().GetIntSlice("details")
 
 			detailFields := make([]es.AnimeDetailField, 0)
 			detailFields = append(detailFields, *e.DefaultDetailFields()...)
@@ -112,12 +112,6 @@ var searchCmd = &cobra.Command{
 
 func init() {
 
-	// option: --l
-	searchCmd.PersistentFlags().Int("l", 10, strings.TrimSpace(fmt.Sprintf(`
-        Specify length of anime list { 1 - 100 }
-        `,
-	)))
-
 	// option: --d
 	availableOptionsStr := strings.Builder{}
 	availableOptionsStr.WriteString("\n\t\t")
@@ -126,16 +120,19 @@ func init() {
 		availableOptionsStr.WriteString("\n\t\t")
 	}
 
-	searchCmd.PersistentFlags().IntSlice("d", []int{}, strings.TrimSpace(fmt.Sprintf(`
+	searchCmd.PersistentFlags().IntSliceP("details", "d", []int{}, strings.TrimSpace(fmt.Sprintf(`
         Specify which anime detail you want
 
             Available Options: %s
-            Usage:
-                ani-cli search "anime title" --d=1,2,31
-                ani-cli search "anime title" --d 1,2,31
         `,
 		availableOptionsStr.String(),
 	)))
+
+	searchCmd.Example = fmt.Sprintf(`
+        ani-cli search "evangelion" -d=1,2,31
+        ani-cli search "samurai champloo" -d 1,2,31
+        `,
+	)
 
 	rootCmd.AddCommand(searchCmd)
 }
