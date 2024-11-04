@@ -79,6 +79,62 @@ func FzfAnimeList(animeList *types.NativeAnimeList, limit int, offset *int) (int
 }
 
 
+func FzfRankingAnimeList(animeList *types.NativeAnimeRanking, limit int, offset *int) (int, error) {
+
+	titleList := make([]string, 0)
+	titleMap := make(map[string]int, 0)
+	for _, v := range animeList.Data {
+        val := v.Node
+
+		plainKeyStr := strings.Builder{}
+		formattedKeyStr := strings.Builder{}
+
+		formattedKeyStr.WriteString(val.Title + "\t")
+		plainKeyStr.WriteString(val.Title + " ")
+
+        formattedKeyStr.WriteString(fmt.Sprintf("%sRank:%s %s%d%s", colors.Red, colors.Reset, colors.Blue, v.Ranking.Rank, colors.Reset))
+		plainKeyStr.WriteString(fmt.Sprintf("Rank: %d", v.Ranking.Rank))
+
+		titleMap[plainKeyStr.String()] = val.ID
+		titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
+	}
+
+	nextListStr := "Next List -->"
+	prevListStr := "<-- Previous List"
+	if *offset > 0 {
+		// previous list
+		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, prevListStr, colors.Reset)))
+	}
+	if len(titleMap) != 0 {
+		// next list
+		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, nextListStr, colors.Reset)))
+	}
+
+	output, err := useFzf(titleList)
+	if err != nil {
+		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
+	}
+
+	selectedTitle := strings.TrimSpace(string(output))
+	// Strip ANSI codes from selectedTitle to match the titleMap keys
+	cleanTitle := StripAnsi(strings.ReplaceAll(selectedTitle, "\t", " "))
+
+	switch cleanTitle {
+	case prevListStr:
+		*offset -= limit
+	case nextListStr:
+		*offset += limit
+	default:
+		animeId, found := titleMap[cleanTitle]
+		if !found {
+			fmt.Println("Selected title not found in the map.")
+			panic("Title's shown in the fzf are not correctly mapped to their anime Id's")
+		}
+		return animeId, nil
+	}
+	return -1, nil
+}
+
 func useFzf(input []string) (string, error) {
 	fzf := exec.Command("fzf", "--no-sort", "--cycle", "--ansi", "+m")
 	fzf.Stdin = strings.NewReader(strings.Join(input, "\n"))

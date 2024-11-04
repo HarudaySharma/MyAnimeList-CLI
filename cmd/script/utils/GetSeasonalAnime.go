@@ -26,7 +26,6 @@ func GetSeasonalAnime[T types.NativeSeasonalAnime | types.NativeAnimeList](p Get
 	parsedSortOptions, invalidFound := es.ParseSortOptions([]string{
 		sortOption,
 	})
-
 	if invalidFound {
 		return fmt.Errorf("Invalid Sort Option {%v}", sortOption)
 	}

@@ -44,6 +44,8 @@ func FetchAnimeRanking(p FetchAnimeRankingParams) *t.NativeAnimeRanking {
 		p.Offset,
 		fields,
 	)
+
+	log.Println(url)
 	req := u.CreateHttpRequest("GET", url)
 	//log.Println("Fetching from URL:", url)
 
