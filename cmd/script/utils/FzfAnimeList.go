@@ -10,6 +10,12 @@ import (
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 )
 
+type FzfAnimeListParams struct {
+	AnimeList *types.NativeAnimeList
+	Limit     int
+	Offset    *int
+}
+
 /*
 shows the anime title's list using fzf
 
@@ -18,11 +24,11 @@ shows the anime title's list using fzf
 	(animeId) int | -1 (if offset is changed)
 	(error) fzf error
 */
-func FzfAnimeList(animeList *types.NativeAnimeList, limit int, offset *int) (int, error) {
+func FzfAnimeList(p FzfAnimeListParams) (int, error) {
 
 	titleList := make([]string, 0)
 	titleMap := make(map[string]int, 0)
-	for _, val := range animeList.Data {
+	for _, val := range p.AnimeList.Data {
 		plainKeyStr := strings.Builder{}
 		formattedKeyStr := strings.Builder{}
 
@@ -44,7 +50,7 @@ func FzfAnimeList(animeList *types.NativeAnimeList, limit int, offset *int) (int
 
 	nextListStr := "Next List -->"
 	prevListStr := "<-- Previous List"
-	if *offset > 0 {
+	if *(p.Offset) > 0 {
 		// previous list
 		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, prevListStr, colors.Reset)))
 	}
@@ -53,7 +59,7 @@ func FzfAnimeList(animeList *types.NativeAnimeList, limit int, offset *int) (int
 		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, nextListStr, colors.Reset)))
 	}
 
-	output, err := useFzf(titleList)
+	output, err := useFzf(titleList, "search results")
 	if err != nil {
 		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
@@ -64,9 +70,9 @@ func FzfAnimeList(animeList *types.NativeAnimeList, limit int, offset *int) (int
 
 	switch cleanTitle {
 	case prevListStr:
-		*offset -= limit
+		*(p.Offset) -= p.Limit
 	case nextListStr:
-		*offset += limit
+		*(p.Offset) += p.Limit
 	default:
 		animeId, found := titleMap[cleanTitle]
 		if !found {
@@ -78,13 +84,19 @@ func FzfAnimeList(animeList *types.NativeAnimeList, limit int, offset *int) (int
 	return -1, nil
 }
 
+type FzfRankingAnimeListParams struct {
+	AnimeList   *types.NativeAnimeRanking
+	Limit       int
+	Offset      *int
+	RankingType string
+}
 
-func FzfRankingAnimeList(animeList *types.NativeAnimeRanking, limit int, offset *int) (int, error) {
+func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 
 	titleList := make([]string, 0)
 	titleMap := make(map[string]int, 0)
-	for _, v := range animeList.Data {
-        val := v.Node
+	for _, v := range p.AnimeList.Data {
+		val := v.Node
 
 		plainKeyStr := strings.Builder{}
 		formattedKeyStr := strings.Builder{}
@@ -92,7 +104,7 @@ func FzfRankingAnimeList(animeList *types.NativeAnimeRanking, limit int, offset 
 		formattedKeyStr.WriteString(val.Title + "\t")
 		plainKeyStr.WriteString(val.Title + " ")
 
-        formattedKeyStr.WriteString(fmt.Sprintf("%sRank:%s %s%d%s", colors.Red, colors.Reset, colors.Blue, v.Ranking.Rank, colors.Reset))
+		formattedKeyStr.WriteString(fmt.Sprintf("%sRank:%s %s%d%s", colors.Red, colors.Reset, colors.Blue, v.Ranking.Rank, colors.Reset))
 		plainKeyStr.WriteString(fmt.Sprintf("Rank: %d", v.Ranking.Rank))
 
 		titleMap[plainKeyStr.String()] = val.ID
@@ -101,7 +113,7 @@ func FzfRankingAnimeList(animeList *types.NativeAnimeRanking, limit int, offset 
 
 	nextListStr := "Next List -->"
 	prevListStr := "<-- Previous List"
-	if *offset > 0 {
+	if *(p.Offset) > 0 {
 		// previous list
 		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, prevListStr, colors.Reset)))
 	}
@@ -110,7 +122,7 @@ func FzfRankingAnimeList(animeList *types.NativeAnimeRanking, limit int, offset 
 		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, nextListStr, colors.Reset)))
 	}
 
-	output, err := useFzf(titleList)
+	output, err := useFzf(titleList, p.RankingType)
 	if err != nil {
 		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
@@ -121,9 +133,9 @@ func FzfRankingAnimeList(animeList *types.NativeAnimeRanking, limit int, offset 
 
 	switch cleanTitle {
 	case prevListStr:
-		*offset -= limit
+		*(p.Offset) -= p.Limit
 	case nextListStr:
-		*offset += limit
+		*(p.Offset) += p.Limit
 	default:
 		animeId, found := titleMap[cleanTitle]
 		if !found {
@@ -135,8 +147,16 @@ func FzfRankingAnimeList(animeList *types.NativeAnimeRanking, limit int, offset 
 	return -1, nil
 }
 
-func useFzf(input []string) (string, error) {
-	fzf := exec.Command("fzf", "--no-sort", "--cycle", "--ansi", "+m")
+func useFzf(input []string, borderLabel string) (string, error) {
+	fzf := exec.Command("fzf",
+		"--no-sort",
+		"--cycle",
+		"--ansi",
+		"+m",
+		"--layout=reverse",
+		"--border=rounded",
+		fmt.Sprintf("--border-label=%s", borderLabel),
+	)
 	fzf.Stdin = strings.NewReader(strings.Join(input, "\n"))
 
 	output, err := fzf.Output()
@@ -144,5 +164,5 @@ func useFzf(input []string) (string, error) {
 		return "", fmt.Errorf("%v", err)
 	}
 
-    return string(output), nil
+	return string(output), nil
 }

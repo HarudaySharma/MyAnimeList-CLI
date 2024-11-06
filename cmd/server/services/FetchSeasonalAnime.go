@@ -23,14 +23,15 @@ type FetchSeasonalAnimeParams struct {
 
 func FetchSeasonalAnime(p FetchSeasonalAnimeParams) *t.NativeSeasonalAnime {
 	if p.Limit == 0 {
-		p.Limit = e.DEFAULT_LIMIT
+		p.Limit = e.DEFAULT_SEARCH_LIST_SIZE
 	}
-	if p.Limit > e.MAX_LIMIT {
+	/* if p.Limit > e.MAX_LIMIT {
 		p.Limit = e.MAX_LIMIT
-	}
-	if p.Offset > e.MAX_OFFSET {
+	} */
+	// doesn't need this actually
+	/* if p.Offset > e.MAX_OFFSET {
 		p.Offset = e.DEFAULT_OFFSET
-	}
+	} */
 
 	// create a client
 	client := http.Client{}

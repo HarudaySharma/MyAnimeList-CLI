@@ -25,19 +25,20 @@ func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 		return &t.NativeAnimeList{}
 	}
 	if p.Limit == 0 {
-		p.Limit = e.DEFAULT_LIMIT
+		p.Limit = e.DEFAULT_SEARCH_LIST_SIZE
 	}
-	if p.Limit > e.MAX_LIMIT {
-		p.Limit = e.MAX_LIMIT
+	if p.Limit > e.MAX_SEARCH_LIST_SIZE {
+		p.Limit = e.MAX_SEARCH_LIST_SIZE
 	}
-	if p.Offset > e.MAX_OFFSET {
+	// doesn't need this actually
+	/* if p.Offset > e.MAX_OFFSET {
 		p.Offset = e.DEFAULT_OFFSET
-	}
+	} */
 
 	// create a client
 	client := http.Client{}
 
-    encodedQuery := url.QueryEscape(p.Query)
+	encodedQuery := url.QueryEscape(p.Query)
 	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
 	url := fmt.Sprintf("%s/anime?q=%s&limit=%v&offset=%v&fields=%v",
 		config.C.MAL_API_URL,
@@ -55,7 +56,7 @@ func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 
 	ret := t.MALAnimeList{}
 	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
-        // getting error if the query param (q = "word1 word2") i.e space b/w words is there
+		// getting error if the query param (q = "word1 word2") i.e space b/w words is there
 		log.Fatalf("ERROR in FetchAnimeList decoding json body \n %v", err)
 	}
 
@@ -69,9 +70,9 @@ func convertToNativeAnimeListType(data *t.MALAnimeList) *t.NativeAnimeList {
 
 	for _, v := range data.Data {
 		node := t.AnimeListDataNode{
-			ID:    v.Node.ID,
-			Title: v.Node.Title,
-            CustomFields: v.Node.CustomFields,
+			ID:           v.Node.ID,
+			Title:        v.Node.Title,
+			CustomFields: v.Node.CustomFields,
 		}
 		convertedData.Data = append(convertedData.Data, node)
 	}

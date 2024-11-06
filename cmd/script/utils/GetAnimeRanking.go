@@ -21,14 +21,14 @@ type GetAnimeRankingParams[T types.NativeAnimeRanking | types.NativeAnimeList] s
 func GetAnimeRanking[T types.NativeAnimeRanking | types.NativeAnimeList](p GetAnimeRankingParams[T]) error {
 	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
 
-	parsedRankingType, invalid := es.ParseAnimeRaking(p.RankingType)
+	_, invalid := es.ParseAnimeRaking(p.RankingType)
 	if invalid {
 		return fmt.Errorf("Invalid Ranking Type Option {%v}", p.RankingType)
 	}
 	// ROUTE: /api/anime/ranking?ranking_type&limit&offset&fields
 	url := fmt.Sprintf("%s/anime/ranking?ranking_type=%s&limit=%d&offset=%d&fields=%s",
 		enums.API_URL,
-		parsedRankingType,
+		p.RankingType,
 		p.Limit,
 		p.Offset,
 		fieldsStr,

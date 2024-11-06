@@ -25,7 +25,12 @@ var rankingCmd = &cobra.Command{
 			limit = 10 // don't panic
 		}
 
-		rankingType, err := rootCmd.Flags().GetString("ranking-type")
+        if limit > es.MAX_RANKING_SEARCH_LIST_SIZE {
+            limit = es.MAX_RANKING_SEARCH_LIST_SIZE
+        }
+
+
+		rankingType, err := cmd.Flags().GetString("ranking-type")
 		if err != nil {
 			rankingType = string(es.RankingAiring)
 		}
@@ -53,7 +58,12 @@ var rankingCmd = &cobra.Command{
 					}
 				}
 
-				animeId, err = u.FzfRankingAnimeList(&animeList, limit, &offset)
+				animeId, err = u.FzfRankingAnimeList(u.FzfRankingAnimeListParams{
+					AnimeList:   &animeList,
+					Limit:       limit,
+					Offset:      &offset,
+					RankingType: rankingType,
+				})
 				if err != nil {
 					if strings.Contains(err.Error(), "130") { // 130 for ESC in FZF
 						os.Exit(0)

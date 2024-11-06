@@ -1,5 +1,5 @@
 run: clean build-server
-	./bin/main.bin
+	./bin/main.bin 42069
 
 build-server:
 	go build -o ./bin/main.bin ./cmd/server/main/main.go
@@ -13,7 +13,6 @@ server: build-server
 	./bin/main.bin
 
 script: build-script
-	./bin/script.bin
 
 clean:
-	go clean 
+	go clean

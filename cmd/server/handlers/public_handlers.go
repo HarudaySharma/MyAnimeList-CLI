@@ -197,8 +197,8 @@ func GETAnimeRanking(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	rankingType := q.Get("ranking_type")
-	rankingTypeParsed, ok := e.ParseAnimeRaking(rankingType)
-	if rankingType == "" || !ok {
+	rankingTypeParsed, invalid := e.ParseAnimeRaking(rankingType)
+	if rankingType == "" || invalid {
 		fmt.Fprint(w, "{\"error\": \"invalid query params \"ranking_type\"\"}")
 		return
 	}

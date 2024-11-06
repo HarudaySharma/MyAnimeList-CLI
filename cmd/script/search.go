@@ -32,6 +32,10 @@ var searchCmd = &cobra.Command{
 			limit = 10 // don't panic
 		}
 
+        if limit > es.MAX_SEARCH_LIST_SIZE {
+            limit = es.MAX_SEARCH_LIST_SIZE
+        }
+
 		var animeList types.NativeAnimeList
 		var animeId int = -1 // will send a request to server every time it is "-1"
 		for {
@@ -64,7 +68,11 @@ var searchCmd = &cobra.Command{
 					}
 				}
 
-				animeId, err = u.FzfAnimeList(&animeList, limit, &offset)
+				animeId, err = u.FzfAnimeList(u.FzfAnimeListParams{
+					AnimeList: &animeList,
+					Limit:     limit,
+					Offset:    &offset,
+				})
 				if err != nil {
 					if strings.Contains(err.Error(), "130") { // 130 for ESC in FZF
 						os.Exit(0)

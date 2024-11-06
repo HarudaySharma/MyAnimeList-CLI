@@ -21,18 +21,21 @@ type FetchAnimeRankingParams struct {
 func FetchAnimeRanking(p FetchAnimeRankingParams) *t.NativeAnimeRanking {
 	// handle params being non existent
 
+	log.Println("fetching anime by ranking")
 	if p.Ranking == "" {
 		return &t.NativeAnimeRanking{}
 	}
 	if p.Limit == 0 {
-		p.Limit = e.DEFAULT_LIMIT
+		p.Limit = e.DEFAULT_SEARCH_LIST_SIZE
 	}
-	if p.Limit > e.MAX_LIMIT {
-		p.Limit = e.MAX_LIMIT
+	if p.Limit > e.MAX_RANKING_SEARCH_LIST_SIZE {
+        // NOTE: Seems we can request at most 500 data nodes at a time from mal api at this endpoint
+		return &t.NativeAnimeRanking{}
 	}
-	if p.Offset > e.MAX_OFFSET {
+	// doesn't need this actually
+	/* if p.Offset > e.MAX_OFFSET {
 		p.Offset = e.DEFAULT_OFFSET
-	}
+	} */
 
 	client := http.Client{}
 
