@@ -91,7 +91,7 @@ var searchCmd = &cobra.Command{
 				break
 			}
 
-			detailsIdxs, _ := cmd.Flags().GetIntSlice("details")
+			detailsIdxs, _ := rootCmd.Flags().GetIntSlice("details")
 
 			detailFields := make([]es.AnimeDetailField, 0)
 			detailFields = append(detailFields, *e.DefaultDetailFields()...)
@@ -119,22 +119,6 @@ var searchCmd = &cobra.Command{
 }
 
 func init() {
-
-	// option: --d
-	availableOptionsStr := strings.Builder{}
-	availableOptionsStr.WriteString("\n\t\t")
-	for i, option := range es.EveryDetailField() {
-		availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i, option))
-		availableOptionsStr.WriteString("\n\t\t")
-	}
-
-	searchCmd.PersistentFlags().IntSliceP("details", "d", []int{}, strings.TrimSpace(fmt.Sprintf(`
-        Specify which anime detail you want
-
-            Available Options: %s
-        `,
-		availableOptionsStr.String(),
-	)))
 
 	searchCmd.Example = fmt.Sprintf(`
         ani-cli search "evangelion" -d=1,2,31

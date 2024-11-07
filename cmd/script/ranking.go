@@ -83,7 +83,7 @@ var rankingCmd = &cobra.Command{
 				break
 			}
 
-			detailsIdxs, _ := cmd.Flags().GetIntSlice("details")
+			detailsIdxs, _ := rootCmd.Flags().GetIntSlice("details")
 
 			detailFields := make([]es.AnimeDetailField, 0)
 			detailFields = append(detailFields, *e.DefaultDetailFields()...)
@@ -119,6 +119,7 @@ func init() {
 		animeRankingTypesStr.WriteString("\n\t\t")
 	}
 
+    // --ranking-type
 	rankingCmd.PersistentFlags().StringP("ranking-type", "t", string(es.AnimeRanking()[0]), strings.TrimSpace(fmt.Sprintf(`
         Available Options:
         %s

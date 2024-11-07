@@ -98,7 +98,7 @@ var seasonalCmd = &cobra.Command{
 				break
 			}
 
-			detailsIdxs, _ := cmd.Flags().GetIntSlice("details")
+			detailsIdxs, _ := rootCmd.Flags().GetIntSlice("details")
 
 			detailFields := make([]es.AnimeDetailField, 0)
 			detailFields = append(detailFields, *e.DefaultDetailFields()...)
@@ -167,22 +167,6 @@ func init() {
             Available Options: %s
         `,
 		sortOptionsStr.String(),
-	)))
-
-	// option: --d
-	availableOptionsStr := strings.Builder{}
-	availableOptionsStr.WriteString("\n\t\t")
-	for i, option := range es.EveryDetailField() {
-		availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i, option))
-		availableOptionsStr.WriteString("\n\t\t")
-	}
-
-	seasonalCmd.PersistentFlags().IntSliceP("details", "d", []int{}, strings.TrimSpace(fmt.Sprintf(`
-        Specify which anime detail you want
-
-            Available Options: %s
-        `,
-		availableOptionsStr.String(),
 	)))
 
 	seasonalCmd.Example = fmt.Sprintf(`
