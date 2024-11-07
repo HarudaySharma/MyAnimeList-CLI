@@ -1,7 +1,10 @@
 package ui
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
+	"image/jpeg"
 	"strconv"
 	"strings"
 
@@ -355,6 +358,8 @@ func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 
 	additionalInfobox.SetBorder(true).SetTitle("Additional Information")
 
+    additionalInfobox.AddItem(ui.CreateImage(), 0, 1, false)
+
 	newRow := tview.NewFlex().SetDirection(tview.FlexColumn)
 	nextRow := 0.0
 
@@ -419,6 +424,22 @@ func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 	}
 
 	return additionalInfobox
+}
+
+func (ui *AnimeDetailsUI) CreateImage() *tview.Image {
+
+    image_link := ui.Details.MainPicture.Medium
+    imgBase64 := u.ImageToBase64(u.FetchImage(image_link))
+
+	image := tview.NewImage()
+	b, _ := base64.StdEncoding.DecodeString(imgBase64)
+	photo, _ := jpeg.Decode(bytes.NewReader(b))
+
+	image.SetImage(photo).
+    SetColors(tview.TrueColor).
+    SetDithering(tview.DitheringFloydSteinberg)
+
+    return image
 }
 
 func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
