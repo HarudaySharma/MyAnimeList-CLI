@@ -150,19 +150,32 @@ func (ui *AnimeDetailsUI) CreateStudios() *tview.TextView {
 	return studioBox
 }
 
-func (ui *AnimeDetailsUI) CreateBackground() *tview.TextView {
+func (ui *AnimeDetailsUI) CreateBackground() (*tview.TextView, int, int) {
+	const maxRowLen = 56
+	text := strings.Builder{}
+
+	for i, ch := range ui.Details.Background {
+		text.WriteRune(ch)
+		if (i+1)%maxRowLen == 0 {
+			text.WriteString("\n")
+		}
+	}
+
 	backgroundBox := c.NewTextView(c.NewTextViewParams{
 		Title:      "Background",
 		TitleAlign: tview.AlignLeft,
 		TitleColor: tcell.ColorGreenYellow,
-		Text:       ui.Details.Background,
+		Text:       text.String(),
 		TextAlign:  tview.AlignLeft,
 	})
 
-	return backgroundBox
+	w := u.CalMaxWidth(text.String()) + 3
+	h := u.CalMaxHeight(text.String()) + 2
+
+	return backgroundBox, w, h
 }
 
-func (ui *AnimeDetailsUI) CreateStartSeason() *tview.TextView {
+func (ui *AnimeDetailsUI) CreateStartSeason() (*tview.TextView, int, int) {
 	s := ui.Details.StartSeason
 
 	text := strings.Builder{}
@@ -178,10 +191,14 @@ func (ui *AnimeDetailsUI) CreateStartSeason() *tview.TextView {
 		TextAlign:  tview.AlignLeft,
 	})
 
-	return seasonBox
+	// as using flex container, so don't really have full control over the item's width nd height
+	w := u.CalMaxWidth(text.String()) + 3
+	h := u.CalMaxHeight(text.String()) + 2
+
+	return seasonBox, w, h
 }
 
-func (ui *AnimeDetailsUI) CreateBroadcast() *tview.TextView {
+func (ui *AnimeDetailsUI) CreateBroadcast() (*tview.TextView, int, int) {
 	broadcast := strings.Builder{}
 	dayOfTheWeek := strings.ReplaceAll(ui.Details.Broadcast.DayOfTheWeek, "\n", "")
 	airingTime := strings.ReplaceAll(ui.Details.Broadcast.StartTime, "\n", "")
@@ -195,28 +212,34 @@ func (ui *AnimeDetailsUI) CreateBroadcast() *tview.TextView {
 		TitleAlign: tview.AlignLeft,
 		TitleColor: tcell.ColorGreenYellow,
 		Text:       broadcast.String(),
-		TextAlign:  tview.AlignLeft,
+		TextAlign:  tview.AlignCenter,
 	})
 	boradcastBox.SetSize(5, 40)
 
-	return boradcastBox
+	w := u.CalMaxWidth(broadcast.String()) + 3
+	h := u.CalMaxHeight(broadcast.String()) + 2
+
+	return boradcastBox, w, h
 }
 
-func (ui *AnimeDetailsUI) CreateMediaType() *tview.TextView {
+func (ui *AnimeDetailsUI) CreateMediaType() (*tview.TextView, int, int) {
 	mediatype := c.NewTextView(c.NewTextViewParams{
 		Title:      "Media-Type",
 		TitleAlign: tview.AlignCenter,
 		TitleColor: tcell.ColorGreenYellow,
 		Text:       ui.Details.MediaType,
-		TextAlign:  tview.AlignLeft,
+		TextAlign:  tview.AlignCenter,
 	})
 
-	return mediatype
+	w := u.CalMaxWidth(ui.Details.MediaType) + 16
+	h := u.CalMaxHeight(ui.Details.MediaType) + 2
+
+	return mediatype, w, h
 }
 
 /*will show both NumListUsers & NumScoringUsers
  */
-func (ui *AnimeDetailsUI) CreateUsersCount() *tview.TextView {
+func (ui *AnimeDetailsUI) CreateUsersCount() (*tview.TextView, int, int) {
 	listUsers := ui.Details.NumListUsers
 	scoringUsers := ui.Details.NumScoringUsers
 
@@ -226,7 +249,7 @@ func (ui *AnimeDetailsUI) CreateUsersCount() *tview.TextView {
 	text.WriteString(u.FormatNumberWithSeparator(listUsers, ","))
 	text.WriteString("[-]")
 	text.WriteString("\n")
-	text.WriteString("Total ScoringUsers: ")
+	text.WriteString("Total Scoring Users: ")
 	text.WriteString("[red]")
 	text.WriteString(u.FormatNumberWithSeparator(scoringUsers, ","))
 	text.WriteString("[-]")
@@ -241,10 +264,13 @@ func (ui *AnimeDetailsUI) CreateUsersCount() *tview.TextView {
 
 	usersCountBox.SetDynamicColors(true)
 
-	return usersCountBox
+	w := u.CalMaxWidth(text.String()) + 3
+	h := u.CalMaxHeight(text.String()) + 2
+
+	return usersCountBox, w, h
 }
 
-func (ui *AnimeDetailsUI) CreateRating() *tview.TextView {
+func (ui *AnimeDetailsUI) CreateRating() (*tview.TextView, int, int) {
 	rating := ui.Details.Rating
 
 	text := strings.Builder{}
@@ -255,13 +281,16 @@ func (ui *AnimeDetailsUI) CreateRating() *tview.TextView {
 		TitleAlign: tview.AlignCenter,
 		TitleColor: tcell.ColorGreenYellow,
 		Text:       text.String(),
-		TextAlign:  tview.AlignLeft,
+		TextAlign:  tview.AlignCenter,
 	})
 
-	return ratingBox
+	w := u.CalMaxWidth(text.String()) + 3
+	h := u.CalMaxHeight(text.String()) + 2
+
+	return ratingBox, w, h
 }
 
-func (ui *AnimeDetailsUI) CreateRank() *tview.TextView {
+func (ui *AnimeDetailsUI) CreateRank() (*tview.TextView, int, int) {
 	rank := ui.Details.Rank
 
 	text := strings.Builder{}
@@ -272,13 +301,16 @@ func (ui *AnimeDetailsUI) CreateRank() *tview.TextView {
 		TitleAlign: tview.AlignCenter,
 		TitleColor: tcell.ColorGreenYellow,
 		Text:       text.String(),
-		TextAlign:  tview.AlignLeft,
+		TextAlign:  tview.AlignCenter,
 	})
 
-	return rankBox
+	w := u.CalMaxWidth(text.String()) + 8
+	h := u.CalMaxHeight(text.String()) + 2
+
+	return rankBox, w, h
 }
 
-func (ui *AnimeDetailsUI) CreatePopularity() *tview.TextView {
+func (ui *AnimeDetailsUI) CreatePopularity() (*tview.TextView, int, int) {
 	popularity := ui.Details.Popularity
 
 	text := strings.Builder{}
@@ -289,39 +321,44 @@ func (ui *AnimeDetailsUI) CreatePopularity() *tview.TextView {
 		TitleAlign: tview.AlignCenter,
 		TitleColor: tcell.ColorGreenYellow,
 		Text:       text.String(),
-		TextAlign:  tview.AlignLeft,
+		TextAlign:  tview.AlignCenter,
 	})
 
-	return popularityBox
+	w := u.CalMaxWidth(text.String()) + 8
+	h := u.CalMaxHeight(text.String()) + 2
+
+	return popularityBox, w, h
 }
 
-func (ui *AnimeDetailsUI) CreateStatistics() *tview.Flex {
+func (ui *AnimeDetailsUI) CreateStatistics() (*tview.Flex, int, int) {
 	stats := ui.Details.Statistics
 
 	text := strings.Builder{}
 	text.WriteString("Watching: ")
 	text.WriteString("[red]")
-	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.Watching, ","))
+
+	// type assertion statistics sub fields
+	text.WriteString(u.FormatNumberInterfaceWithSeparator(stats.Status.Watching, ","))
 	text.WriteString("[-]")
 	text.WriteString("\n")
 	text.WriteString("Completed: ")
 	text.WriteString("[red]")
-	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.Completed, ","))
+	text.WriteString(u.FormatNumberInterfaceWithSeparator(stats.Status.Completed, ","))
 	text.WriteString("[-]")
 	text.WriteString("\n")
 	text.WriteString("On Hold: ")
 	text.WriteString("[red]")
-	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.OnHold, ","))
+	text.WriteString(u.FormatNumberInterfaceWithSeparator(stats.Status.OnHold, ","))
 	text.WriteString("[-]")
 	text.WriteString("\n")
 	text.WriteString("Dropped: ")
 	text.WriteString("[red]")
-	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.Dropped, ","))
+	text.WriteString(u.FormatNumberInterfaceWithSeparator(stats.Status.Dropped, ","))
 	text.WriteString("[-]")
 	text.WriteString("\n")
 	text.WriteString("Plan to Watch: ")
 	text.WriteString("[red]")
-	text.WriteString(u.FormatNumberStringWithSeparator(stats.Status.PlanToWatch, ","))
+	text.WriteString(u.FormatNumberInterfaceWithSeparator(stats.Status.PlanToWatch, ","))
 	text.WriteString("[-]")
 
 	statusBox := c.NewTextView(c.NewTextViewParams{
@@ -343,13 +380,16 @@ func (ui *AnimeDetailsUI) CreateStatistics() *tview.Flex {
 	totalUsersBox.SetBorder(false)
 
 	statisticsBox := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(totalUsersBox, 2, 1, false).
-		AddItem(statusBox, 6, 4, false)
+		AddItem(totalUsersBox, 1, 1, false).
+		AddItem(statusBox, u.CalMaxHeight(text.String())+2, 1, false)
 
 	statisticsBox.SetTitle("Statistics")
-	statisticsBox.SetBorder(true).SetBorderPadding(2, 0, 0, 0)
+	statisticsBox.SetBorder(true).SetBorderPadding(1, 0, 0, 0)
 
-	return statisticsBox
+	w := u.CalMaxWidth(text.String()) + 3
+	h := u.CalMaxHeight(text.String()) + 6
+
+	return statisticsBox, w, h
 }
 
 // TODO: work on this
@@ -367,6 +407,8 @@ func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 
 	newRow := tview.NewFlex().SetDirection(tview.FlexColumn)
 	nextRow := 0.0
+	rowW := 1
+	rowH := 1
 
 	for _, field := range *(ui.DetailFields) {
 		// all the default details should be skipped
@@ -375,57 +417,62 @@ func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 		}
 
 		var textView *tview.TextView
+		var w int
+		var h int
 		var flexBox *tview.Flex
 
 		switch field {
 		case es.Background:
-			textView = ui.CreateBackground()
-			nextRow += 1.5
+			textView, w, h = ui.CreateBackground()
+			nextRow += 3
 		case es.StartSeason:
-			textView = ui.CreateStartSeason()
-			nextRow += 1.5
+			textView, w, h = ui.CreateStartSeason()
+			nextRow += 1
 		case es.Broadcast:
-			textView = ui.CreateBroadcast()
+			textView, w, h = ui.CreateBroadcast()
 			nextRow += 1
 		case es.MediaType:
-			textView = ui.CreateMediaType()
-			nextRow += 1.2
+			textView, w, h = ui.CreateMediaType()
+			nextRow += 1
 			// NOTE: this is dumb
 		case es.NumListUsers:
 			if ui.Details.NumListUsers != 0 && ui.Details.NumScoringUsers != 0 {
-				textView = ui.CreateUsersCount()
+				textView, w, h = ui.CreateUsersCount()
+				nextRow += 1.5
 			}
-			nextRow += 1
 		case es.Rating:
-			textView = ui.CreateRating()
-			nextRow += 2
+			textView, w, h = ui.CreateRating()
+			nextRow += 3
 		case es.Rank:
-			textView = ui.CreateRank()
-			nextRow += 1.5
+			textView, w, h = ui.CreateRank()
+			nextRow += 1
 		case es.Popularity:
-			textView = ui.CreatePopularity()
-			nextRow += 1.5
+			textView, w, h = ui.CreatePopularity()
+			nextRow += 1
 		case es.Statistics:
-			flexBox = ui.CreateStatistics()
+			flexBox, w, h = ui.CreateStatistics()
 			nextRow += 3
 		}
 
 		if flexBox != nil {
-			newRow.AddItem(flexBox, 0, 1, false)
+			newRow.AddItem(flexBox, min(w, 100), 1, false)
 		}
 		if textView != nil {
-			newRow.AddItem(textView, 0, 1, false)
+			newRow.AddItem(textView, min(w, 100), 1, false)
 		}
+		rowH = max(rowH, h)
+		rowW = max(rowW, min(w, 100))
 
 		if nextRow >= 5 {
-			additionalInfobox.AddItem(newRow, 0, 1, false)
+			additionalInfobox.AddItem(newRow, rowH, 1, false)
 			newRow = tview.NewFlex().SetDirection(tview.FlexColumn)
 			nextRow = 0.0
+			rowH = 0
 		}
 	}
 
 	if nextRow != 0.0 {
-		additionalInfobox.AddItem(newRow, 0, 1, false)
+		additionalInfobox.AddItem(newRow, rowH, 1, false)
 	}
 
 	return additionalInfobox
@@ -443,11 +490,11 @@ func (ui *AnimeDetailsUI) CreateImage() *tview.Image {
 		image_link = ui.Details.MainPicture.Medium
 	}
 
-    image := tview.NewImage()
-    photo, mimetype := u.FetchImage(image_link);
-    if mimetype != "jpeg" && mimetype != "jpg" && mimetype != "png" {
-        return image.SetLabel("Unsupported Image Format")
-    }
+	image := tview.NewImage()
+	photo, mimetype := u.FetchImage(image_link)
+	if mimetype != "jpeg" && mimetype != "jpg" && mimetype != "png" {
+		return image.SetLabel("Unsupported Image Format")
+	}
 
 	image.SetImage(photo).
 		SetColors(tview.TrueColor).
@@ -472,7 +519,7 @@ func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
 					tview.NewFlex().SetDirection(tview.FlexColumn).
 						AddItem(ui.CreateStudios(), 0, 1, false), 3, 1, false), 0, 1, false)
 
-    // Additional Field Check
+		// Additional Field Check
 	defaultFieldCount := 0
 	for _, field := range *(ui.DetailFields) {
 		if isDefault, _ := (*e.DefaultDetailFieldsMap())[field]; isDefault == true {

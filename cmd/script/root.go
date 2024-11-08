@@ -32,8 +32,14 @@ func init() {
 	// option: --details
 	availableOptionsStr := strings.Builder{}
 	availableOptionsStr.WriteString("\n\t\t")
-	for i, option := range es.EveryDetailField() {
-		availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i, option))
+
+	everyDetailField := es.EveryDetailField()
+	for i := 0; i < len(everyDetailField); i+=2 {
+		availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i, everyDetailField[i]))
+		availableOptionsStr.WriteString("\t\t\t\t\t")
+		if i+1 < len(everyDetailField) {
+			availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i + 1, everyDetailField[i + 1]))
+		}
 		availableOptionsStr.WriteString("\n\t\t")
 	}
 

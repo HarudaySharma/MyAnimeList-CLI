@@ -52,11 +52,11 @@ type Broadcast struct {
 type Statistics struct {
 	NumListUsers int64 `json:"num_list_users"`
 	Status       struct {
-		Completed   string `json:"completed"`
-		Dropped     string `json:"dropped"`
-		OnHold      string `json:"on_hold"`
-		PlanToWatch string `json:"plan_to_watch"`
-		Watching    string `json:"watching"`
+		Completed   interface{} `json:"completed"`     // can be string or int
+		Dropped     interface{} `json:"dropped"`       // can be string or int
+		OnHold      interface{} `json:"on_hold"`       // can be string or int
+		PlanToWatch interface{} `json:"plan_to_watch"` // can be string or int
+		Watching    interface{} `json:"watching"`      // can be string or int
 	} `json:"status"`
 }
 

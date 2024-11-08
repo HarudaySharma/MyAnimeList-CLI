@@ -26,7 +26,22 @@ func FormatNumberStringWithSeparator(numStr string, sep string) string {
 	if start == 1 {
 		return "-" + sb.String() // Re-add the negative sign for negative numbers
 	}
+
+	if sb.Len() == 0 {
+		return "0"
+	}
 	return sb.String()
+}
+
+func FormatNumberInterfaceWithSeparator(ni interface{}, sep string) string {
+	switch num := ni.(type) {
+	case string:
+		return FormatNumberStringWithSeparator(num, sep)
+	case int:
+		return FormatNumberWithSeparator(int64(num), sep)
+	}
+
+	return "-"
 }
 
 func FormatNumberWithSeparator(ne int64, sep string) string {
@@ -50,6 +65,10 @@ func FormatNumberWithSeparator(ne int64, sep string) string {
 
 	if start == 1 {
 		return "-" + sb.String() // Re-add the negative sign for negative numbers
+	}
+
+	if sb.Len() == 0 {
+		return "0"
 	}
 	return sb.String()
 }
