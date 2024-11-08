@@ -1,10 +1,11 @@
 package ui
 
 import (
-	"bytes"
-	"encoding/base64"
+	// "bytes"
+	// "encoding/base64"
 	"fmt"
-	"image/jpeg"
+	// "image/jpeg"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -358,7 +359,11 @@ func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 
 	additionalInfobox.SetBorder(true).SetTitle("Additional Information")
 
-    additionalInfobox.AddItem(ui.CreateImage(), 0, 1, false)
+	if contain := slices.Contains(*ui.DetailFields, es.MainPicture); contain {
+		if ui.Details.MainPicture.Large != "" || ui.Details.MainPicture.Medium != "" {
+			additionalInfobox.AddItem(ui.CreateImage(), 0, 1, false)
+		}
+	}
 
 	newRow := tview.NewFlex().SetDirection(tview.FlexColumn)
 	nextRow := 0.0
@@ -428,18 +433,27 @@ func (ui *AnimeDetailsUI) CreateAdditionalInfo() *tview.Flex {
 
 func (ui *AnimeDetailsUI) CreateImage() *tview.Image {
 
-    image_link := ui.Details.MainPicture.Medium
-    imgBase64 := u.ImageToBase64(u.FetchImage(image_link))
+	if contain := slices.Contains(*ui.DetailFields, es.MainPicture); !contain {
+		return tview.NewImage().SetLabel("No-Image")
+	}
 
-	image := tview.NewImage()
-	b, _ := base64.StdEncoding.DecodeString(imgBase64)
-	photo, _ := jpeg.Decode(bytes.NewReader(b))
+	// prefers large picture size
+	image_link := ui.Details.MainPicture.Large
+	if image_link == "" {
+		image_link = ui.Details.MainPicture.Medium
+	}
+
+    image := tview.NewImage()
+    photo, mimetype := u.FetchImage(image_link);
+    if mimetype != "jpeg" && mimetype != "jpg" && mimetype != "png" {
+        return image.SetLabel("Unsupported Image Format")
+    }
 
 	image.SetImage(photo).
-    SetColors(tview.TrueColor).
-    SetDithering(tview.DitheringFloydSteinberg)
+		SetColors(tview.TrueColor).
+		SetDithering(tview.DitheringFloydSteinberg)
 
-    return image
+	return image
 }
 
 func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
@@ -456,10 +470,24 @@ func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
 				AddItem(ui.CreateSynopsis(), 0, 3, false).
 				AddItem(
 					tview.NewFlex().SetDirection(tview.FlexColumn).
-						AddItem(ui.CreateStudios(), 0, 1, false), 3, 1, false), 0, 1, false).
-		AddItem(ui.CreateAdditionalInfo(), 0, 1, false)
+						AddItem(ui.CreateStudios(), 0, 1, false), 3, 1, false), 0, 1, false)
 
-		//layout.SetBorder(true).SetTitle("Anime Details")
+    // Additional Field Check
+	defaultFieldCount := 0
+	for _, field := range *(ui.DetailFields) {
+		if isDefault, _ := (*e.DefaultDetailFieldsMap())[field]; isDefault == true {
+			defaultFieldCount++
+		}
+	}
+
+	if defaultFieldCount == len(*ui.DetailFields) {
+		// no Additional Fields Present
+		return layout
+	}
+
+	layout.AddItem(ui.CreateAdditionalInfo(), 0, 1, false)
+
+	//layout.SetBorder(true).SetTitle("Anime Details")
 
 	return layout
 }
@@ -475,7 +503,6 @@ func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
 	StartDate              string                 `json:"start_date"`
 	EndDate                string                 `json:"end_date"`
 
-	MainPicture            Picture                `json:"main_picture"`
 	Pictures               []Picture              `json:"pictures"`
 
 	Mean                   float64                `json:"mean"`
