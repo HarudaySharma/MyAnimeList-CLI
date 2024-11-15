@@ -74,6 +74,7 @@ func convertToNativeAnimeListType(data *t.MALAnimeList) *t.NativeAnimeList {
 			Title:        v.Node.Title,
 			CustomFields: v.Node.CustomFields,
 		}
+        node.CustomFields["main_picture"] = v.Node.MainPicture
 		convertedData.Data = append(convertedData.Data, node)
 	}
 	convertedData.Paging = data.Paging

@@ -72,12 +72,15 @@ func FetchAnimeRanking(p FetchAnimeRankingParams) *t.NativeAnimeRanking {
 func convertToNativeAnimeRankingType(data *t.MALAnimeRanking) *t.NativeAnimeRanking {
 	var parsedData t.NativeAnimeRanking
 	for _, d := range data.Data {
+		node := t.AnimeListDataNode{
+			ID:           d.Node.ID,
+			Title:        d.Node.Title,
+            CustomFields: d.Node.CustomFields, // Still keeping the raw custom fields
+		}
+        node.CustomFields["main_picture"] = d.Node.MainPicture
+
 		parsedData.Data = append(parsedData.Data, t.AnimeRankingDataNode{
-			Node: t.AnimeListDataNode{
-				ID:           d.Node.ID,
-				Title:        d.Node.Title,
-				CustomFields: d.Node.CustomFields, // Still keeping the raw custom fields
-			},
+            Node: node,
 			Ranking: d.Ranking,
 		})
 	}

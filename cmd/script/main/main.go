@@ -16,6 +16,8 @@ var (
 
 func main() {
 	// start the daemon (mal_cli_api) if not running already
+	script.Execute()
+    return
 	if !daemon.IsRunning() {
 		fmt.Println("DAEMON NOT RUNNING")
 		fmt.Println("STARTING DAEMON....")
@@ -26,7 +28,6 @@ func main() {
         fmt.Println("___DAEMON RUNNING!!___")
     }
 
-	script.Execute()
 }
 
 func init() {

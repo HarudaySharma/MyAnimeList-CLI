@@ -4,20 +4,20 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"io/ioutil"
-	"net/http"
+	"os"
 )
 
 // FetchImage returns the image and its mimetype
-func FetchImage(imageUrl string) (image.Image, string)   {
-    resp, err := http.Get(imageUrl)
-    if err != nil {
-        fmt.Println("error fetching photo")
+func FetchImage(imageId int, imageUrl string) (image.Image, string)   {
+    //TODO: add caching here too
+
+    filePath := imageDir + "/id/" + fmt.Sprintf("%d", imageId)
+    if err := DownloadImage(imageUrl,  filePath); err != nil {
+        fmt.Println("error downloading image")
         return nil, ""
     }
-    defer resp.Body.Close()
 
-    imgData, err := ioutil.ReadAll(resp.Body)
+    imgData, err := os.ReadFile(filePath)
     if err != nil {
         fmt.Println(err, "failed reading request body")
         return nil, ""

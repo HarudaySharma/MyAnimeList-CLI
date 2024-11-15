@@ -32,12 +32,17 @@ var searchCmd = &cobra.Command{
 			limit = 10 // don't panic
 		}
 
-        if limit > es.MAX_SEARCH_LIST_SIZE {
-            limit = es.MAX_SEARCH_LIST_SIZE
-        }
+		if limit > es.MAX_SEARCH_LIST_SIZE {
+			limit = es.MAX_SEARCH_LIST_SIZE
+		}
 
 		var animeList types.NativeAnimeList
 		var animeId int = -1 // will send a request to server every time it is "-1"
+
+		detailFields := make([]es.AnimeDetailField, 0)
+		detailFields = append(detailFields, *e.PreviewDetailFields()...)
+		detailFields = append(detailFields, es.Title, es.StartSeason)
+
 		for {
 			for {
 				for len(query) < 3 {
@@ -56,9 +61,7 @@ var searchCmd = &cobra.Command{
 						Query:     query,
 						Limit:     limit,
 						Offset:    offset,
-						Fields: []es.AnimeDetailField{
-							es.StartSeason,
-						},
+						Fields:    detailFields,
 					})
 					if err != nil {
 						fmt.Printf("%v\n****ERROR GETTING ANIMELIST**** ", err)

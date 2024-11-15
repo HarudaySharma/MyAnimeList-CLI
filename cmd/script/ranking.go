@@ -25,10 +25,9 @@ var rankingCmd = &cobra.Command{
 			limit = 10 // don't panic
 		}
 
-        if limit > es.MAX_RANKING_SEARCH_LIST_SIZE {
-            limit = es.MAX_RANKING_SEARCH_LIST_SIZE
-        }
-
+		if limit > es.MAX_RANKING_SEARCH_LIST_SIZE {
+			limit = es.MAX_RANKING_SEARCH_LIST_SIZE
+		}
 
 		rankingType, err := cmd.Flags().GetString("ranking-type")
 		if err != nil {
@@ -37,6 +36,11 @@ var rankingCmd = &cobra.Command{
 
 		var animeList types.NativeAnimeRanking
 		var animeId int = -1 // will send a request to server every time it is "-1"
+
+		detailFields := make([]es.AnimeDetailField, 0)
+		detailFields = append(detailFields, *e.PreviewDetailFields()...)
+		detailFields = append(detailFields, es.Title)
+
 		for {
 			for {
 
@@ -46,9 +50,7 @@ var rankingCmd = &cobra.Command{
 						RankingType: rankingType,
 						Limit:       limit,
 						Offset:      offset,
-						Fields: []es.AnimeDetailField{
-							es.StartSeason,
-						},
+						Fields:      *e.PreviewDetailFields(),
 					})
 					if err != nil {
 						fmt.Printf("%v\n****ERROR IN RANKING ANIME****", err)
@@ -119,7 +121,7 @@ func init() {
 		animeRankingTypesStr.WriteString("\n\t\t")
 	}
 
-    // --ranking-type
+	// --ranking-type
 	rankingCmd.PersistentFlags().StringP("ranking-type", "t", string(es.AnimeRanking()[0]), strings.TrimSpace(fmt.Sprintf(`
         Available Options:
         %s

@@ -26,9 +26,9 @@ var seasonalCmd = &cobra.Command{
 			limit = 10 // don't panic
 		}
 
-        if limit > es.MAX_SEARCH_LIST_SIZE {
-            limit = es.MAX_SEARCH_LIST_SIZE
-        }
+		if limit > es.MAX_SEARCH_LIST_SIZE {
+			limit = es.MAX_SEARCH_LIST_SIZE
+		}
 
 		year, err := cmd.Flags().GetInt("year")
 		if err != nil {
@@ -47,6 +47,11 @@ var seasonalCmd = &cobra.Command{
 
 		var animeList *types.NativeAnimeList
 		var animeId int = -1 // will send a request to server every time it is "-1"
+
+		detailFields := make([]es.AnimeDetailField, 0)
+		detailFields = append(detailFields, *e.PreviewDetailFields()...)
+		detailFields = append(detailFields, es.Title, es.StartSeason)
+
 		for {
 			for {
 
@@ -60,9 +65,7 @@ var seasonalCmd = &cobra.Command{
 						Limit:     limit,
 						Offset:    offset,
 						Sort:      sortBy,
-						Fields: []es.AnimeDetailField{
-							es.StartSeason,
-						},
+						Fields:    detailFields,
 					})
 					if err != nil {
 						fmt.Printf("%v\n****ERROR IN SEASONAL ANIME**** ", err)

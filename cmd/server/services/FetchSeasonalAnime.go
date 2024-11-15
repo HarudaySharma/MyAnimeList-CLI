@@ -73,9 +73,13 @@ func convertToNativeSeasonalAnime(data *t.MALSeasonalAnime) *t.NativeSeasonalAni
 			Title:        v.Node.Title,
 			CustomFields: v.Node.CustomFields,
 		}
+        node.CustomFields["main_picture"] = v.Node.MainPicture
 		convertedData.Data = append(convertedData.Data, node)
 	}
 	convertedData.Paging = data.Paging
+
+    b, _ := json.MarshalIndent(data, "\t", " ")
+    fmt.Println(string(b))
 
 	return &convertedData
 }

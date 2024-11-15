@@ -26,9 +26,13 @@ type AnimeDetailsUI struct {
 
 func (ui *AnimeDetailsUI) CreateTitle() *tview.TextView {
 	alternativeTitles := strings.Builder{}
-	alternativeTitles.WriteString("ENG:\t")
-	alternativeTitles.WriteString(fmt.Sprintln(ui.Details.AlternativeTitles.EN))
-	alternativeTitles.WriteString("JP:\t")
+	alternativeTitles.WriteString("ENG:  ")
+	if len(ui.Details.AlternativeTitles.EN) == 0 {
+        alternativeTitles.WriteString(fmt.Sprintln(ui.Details.Title))
+	} else {
+		alternativeTitles.WriteString(fmt.Sprintln(ui.Details.AlternativeTitles.EN))
+	}
+	alternativeTitles.WriteString(" JP:  ")
 	alternativeTitles.WriteString(fmt.Sprintln(ui.Details.AlternativeTitles.JA))
 
 	titleBox := c.NewTextView(c.NewTextViewParams{
@@ -491,7 +495,7 @@ func (ui *AnimeDetailsUI) CreateImage() *tview.Image {
 	}
 
 	image := tview.NewImage()
-	photo, mimetype := u.FetchImage(image_link)
+	photo, mimetype := u.FetchImage(ui.Details.ID, image_link)
 	if mimetype != "jpeg" && mimetype != "jpg" && mimetype != "png" {
 		return image.SetLabel("Unsupported Image Format")
 	}

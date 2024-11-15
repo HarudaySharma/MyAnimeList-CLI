@@ -1,4 +1,4 @@
-## TODO
+## todo
 
 #### all the public routes for MAL_CLI;
 
@@ -16,17 +16,29 @@
 
 #### User Script (client)
 
-- mal-cli anime [ranking|seasonal] "search title"
-    - user will see the list of anime matching the search (fzf)
-    - on selecting one of them, (if options are given) they will get the details of the selection
+- [ ] Script Commands
+    - [x] search
+    - [x] seasonal
+    - [x] ranking
+    - [ ] user specific commands
+- [ ] UI
+    - [x] mal-cli anime [ranking|seasonal] "search title"
+        - [x] user will see the list of anime matching the search (fzf)
+        - [x] on selecting one of them, (if options are given) they will get the details of the selection
+    - [ ] show anime details on list selection step.
 
 
-## Short Term Goal
+#### Short Term Goal
 
-complete the public routes handling and then create a client capable of requesting data from those public routes
+- [x] complete the public routes handling and then create a client capable of requesting data from those public routes
 
-#### Script Commands
-1. search
+---
+
+## Script Commands
+- search
+- seasonal
+- ranking
+
 
 > [!NOTE]
 > Libraries for creating the terminal client
@@ -35,10 +47,7 @@ complete the public routes handling and then create a client capable of requesti
 > - fzf (probably) for choosing from a list of data.
 
 
+``` bash
+kitten icat --place 28x28@152x3 --clear --align=center https://bleach-anime.com/assets/img/top/main_09.jpg
 
-
-## Today's Task
-
-design how the user will use the script...
-- add some details flags
-- give user choice to explictly tell what specific details they want about the anime aside from the basic details
+```

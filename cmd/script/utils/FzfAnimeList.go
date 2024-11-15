@@ -3,7 +3,9 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/colors"
@@ -15,6 +17,9 @@ type FzfAnimeListParams struct {
 	Limit     int
 	Offset    *int
 }
+
+var imageDir = os.Getenv("PREVIEW_IMAGE_CACHE_DIR")
+var dataDir = os.Getenv("PREVIEW_DATA_CACHE_DIR")
 
 /*
 shows the anime title's list using fzf
@@ -32,20 +37,51 @@ func FzfAnimeList(p FzfAnimeListParams) (int, error) {
 		plainKeyStr := strings.Builder{}
 		formattedKeyStr := strings.Builder{}
 
-		formattedKeyStr.WriteString(val.Title + "\t")
-		plainKeyStr.WriteString(val.Title + " ")
+        // so to not mess with filepath
+		val.Title = strings.ReplaceAll(val.Title, "\\", "-")
+		val.Title = strings.ReplaceAll(val.Title, "/", "-")
+
+        formattedKeyStr.WriteString(val.Title)
+        plainKeyStr.WriteString(val.Title)
 
 		startSeason := val.CustomFields["start_season"]
 		if seasonData, ok := startSeason.(map[string]interface{}); ok {
 			season, _ := seasonData["season"]
 			year, _ := seasonData["year"]
 
+            formattedKeyStr.WriteString("\t")
+            plainKeyStr.WriteString(" ")
 			plainKeyStr.WriteString(fmt.Sprintf("[ %v ~ %v ]", year, season))
 			formattedKeyStr.WriteString(fmt.Sprintf("%s[ %v ~ %v ]%s", colors.Purple, year, season, colors.Reset))
 		}
 
 		titleMap[plainKeyStr.String()] = val.ID
 		titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
+
+		// download the image with this title and store it in the /tmp/mal-cli/images
+		mainPicture := val.CustomFields["main_picture"]
+		if mainPicture, ok := mainPicture.(map[string]interface{}); ok {
+			medium, _ := mainPicture["medium"]
+			url := fmt.Sprintf("%v", medium)
+			fileName := strings.ReplaceAll(plainKeyStr.String(), " ", "")
+			fileName = strings.ReplaceAll(fileName, "\t", "")
+			fileName += filepath.Ext(url)
+
+			go func() {
+				// save preview images to cache
+				if err := DownloadImage(url, imageDir+"/"+fileName); err != nil {
+					fmt.Println(err)
+					fmt.Println("error dowloading image")
+				}
+			}()
+			go func() {
+				// save preview data to cache
+				fileName := strings.ReplaceAll(plainKeyStr.String(), " ", "")
+				fileName = strings.ReplaceAll(fileName, "\t", "")
+				SavePreviewData(dataDir+"/"+fileName, val)
+
+			}()
+		}
 	}
 
 	nextListStr := "Next List -->"
@@ -109,6 +145,30 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 
 		titleMap[plainKeyStr.String()] = val.ID
 		titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
+
+		mainPicture := val.CustomFields["main_picture"]
+		if mainPicture, ok := mainPicture.(map[string]interface{}); ok {
+			medium, _ := mainPicture["medium"]
+			url := fmt.Sprintf("%v", medium)
+			fileName := strings.ReplaceAll(plainKeyStr.String(), " ", "")
+			fileName = strings.ReplaceAll(fileName, "\t", "")
+			fileName += filepath.Ext(url)
+
+			go func() {
+				// save preview images to cache
+				if err := DownloadImage(url, imageDir+"/"+fileName); err != nil {
+					fmt.Println(err)
+					fmt.Println("error dowloading image")
+				}
+			}()
+			go func() {
+				// save preview data to cache
+				fileName := strings.ReplaceAll(plainKeyStr.String(), " ", "")
+				fileName = strings.ReplaceAll(fileName, "\t", "")
+				SavePreviewData(dataDir+"/"+fileName, val)
+
+			}()
+		}
 	}
 
 	nextListStr := "Next List -->"
@@ -148,6 +208,7 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 }
 
 func useFzf(input []string, borderLabel string) (string, error) {
+
 	fzf := exec.Command("fzf",
 		"--no-sort",
 		"--cycle",
@@ -155,7 +216,39 @@ func useFzf(input []string, borderLabel string) (string, error) {
 		"+m",
 		"--layout=reverse",
 		"--border=rounded",
+		"--preview-window=right:30%",
+		"--wrap",
 		fmt.Sprintf("--border-label=%s", borderLabel),
+		fmt.Sprintf(`--preview=
+            %s
+            title=$(echo {} | tr -d '[:space:]')
+            show_image_previews="%s"
+            if [ "${show_image_previews}" = "true" ];then
+                if [ -s "%s/${title}.jpg" ]; then
+                    fzf-preview "%s/${title}.jpg"
+                elif [ -s "%s/${title}.png" ]; then
+                    fzf-preview "%s/${title}.png"
+                elif [ -s "%s/${title}.webp" ]; then
+                    fzf-preview "%s/${title}.webp"
+                else
+                    echo Loading Image...
+                fi
+            fi
+            if [ -s "%s/${title}" ]; then
+                source "%s/${title}"
+            else
+                echo Loading Data...
+            fi
+
+
+            `,
+			fzfPreview(),
+			"true",
+			imageDir, imageDir,
+			imageDir, imageDir,
+			imageDir, imageDir,
+			dataDir, dataDir,
+		),
 	)
 	fzf.Stdin = strings.NewReader(strings.Join(input, "\n"))
 
