@@ -23,7 +23,7 @@ func GetAnimeDetails[T types.AnimeDetails](p GetAnimeDetailsParams[T]) error {
 	fieldsStr := utils.ConvertToCommaSeperatedString(p.Fields)
 
 	url := fmt.Sprintf("%s/anime/%d?detail_type=%s&fields=%s",
-		enums.API_URL,
+		enums.ApiUrl,
 		p.AnimeId,
 		p.DetailType,
 		fieldsStr,

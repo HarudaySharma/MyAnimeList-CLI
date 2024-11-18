@@ -27,7 +27,7 @@ func GetAnimeRanking[T types.NativeAnimeRanking | types.NativeAnimeList](p GetAn
 	}
 	// ROUTE: /api/anime/ranking?ranking_type&limit&offset&fields
 	url := fmt.Sprintf("%s/anime/ranking?ranking_type=%s&limit=%d&offset=%d&fields=%s",
-		enums.API_URL,
+		enums.ApiUrl,
 		p.RankingType,
 		p.Limit,
 		p.Offset,

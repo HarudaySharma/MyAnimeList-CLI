@@ -2,16 +2,15 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script"
 	"github.com/HarudaySharma/MyAnimeList-CLI/internal/shared/daemon"
-	"github.com/joho/godotenv"
+	embedfiles "github.com/HarudaySharma/MyAnimeList-CLI/internal/shared/embedFiles"
 )
 
 var (
-	DAEMON_PORT int64 = 0
+	DaemonPort int64 = 0
 )
 
 func main() {
@@ -21,7 +20,7 @@ func main() {
 	if !daemon.IsRunning() {
 		fmt.Println("DAEMON NOT RUNNING")
 		fmt.Println("STARTING DAEMON....")
-		daemon.StartDaemon(DAEMON_PORT)
+		daemon.StartDaemon(DaemonPort)
 	}
 
     if daemon.IsRunning() {
@@ -31,13 +30,9 @@ func main() {
 }
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic("Error loading .env file")
-	}
-
-    DAEMON_PORT, err = strconv.ParseInt(os.Getenv("DAEMON_PORT"), 10, 64)
+    var err error
+    DaemonPort, err = strconv.ParseInt(embedfiles.DaemonPort, 10, 64)
     if err != nil {
-		panic("error parsing DAEMON_PORT")
+		panic(fmt.Sprintf("error parsing dameon port %v", err))
     }
 }

@@ -24,7 +24,7 @@ func GetAnimeList[T types.NativeAnimeList](p GetAnimeListParams[T]) error {
 	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
 
 	url := fmt.Sprintf("%s/anime-list?q=%s&limit=%v&offset=%v&fields=%v",
-		enums.API_URL,
+		enums.ApiUrl,
 		encodedQuery,
 		p.Limit,
 		p.Offset,

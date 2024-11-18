@@ -34,7 +34,7 @@ func GetSeasonalAnime[T types.NativeSeasonalAnime | types.NativeAnimeList](p Get
 
 	// - ROUTE: /api/anime/season/{year}/{season}?limit?offset?sort?fields
 	url := fmt.Sprintf("%s/anime/seasonal/%d/%s?limit=%v&offset=%v&sort=%s&fields=%v",
-		enums.API_URL,
+		enums.ApiUrl,
 		p.Year,
 		p.Season,
 		p.Limit,

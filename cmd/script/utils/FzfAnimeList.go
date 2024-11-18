@@ -3,11 +3,11 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	embedfiles "github.com/HarudaySharma/MyAnimeList-CLI/internal/shared/embedFiles"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/colors"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 )
@@ -18,8 +18,8 @@ type FzfAnimeListParams struct {
 	Offset    *int
 }
 
-var imageDir = os.Getenv("PREVIEW_IMAGE_CACHE_DIR")
-var dataDir = os.Getenv("PREVIEW_DATA_CACHE_DIR")
+var imageDir = embedfiles.PreviewImageCacheDir
+var dataDir = embedfiles.PreviewDataCacheDir
 
 /*
 shows the anime title's list using fzf

@@ -2,23 +2,16 @@ package enums
 
 import (
 	"fmt"
-	"os"
+	_ "os"
 
-	"github.com/joho/godotenv"
+	embedfiles "github.com/HarudaySharma/MyAnimeList-CLI/internal/shared/embedFiles"
 )
 
 var (
-    API_URL = ""
+    ApiUrl = ""
 )
 
 func init() {
-	//err := godotenv.Load("./../../../.env") // for testing
-    err := godotenv.Load(".env")
-	if err != nil {
-		panic("Error loading .env file")
-	}
-
-	DAEMON_PORT := os.Getenv("DAEMON_PORT")
-    API_URL = fmt.Sprintf("http://localhost:%s/api", DAEMON_PORT)
+    ApiUrl = fmt.Sprintf("http://localhost:%s/api", embedfiles.DaemonPort)
 }
 

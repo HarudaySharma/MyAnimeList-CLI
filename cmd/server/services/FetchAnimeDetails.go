@@ -17,7 +17,7 @@ func FetchAnimeDetails(animeId string, fields []e.AnimeDetailField) *t.NativeAni
 
 	fieldsStr := u.ConvertToCommaSeperatedString(fields)
 	url := fmt.Sprintf("%s/anime/%s?fields=%s",
-		config.C.MAL_API_URL,
+		config.C.MalApiUrl,
 		animeId,
 		fieldsStr,
 	)

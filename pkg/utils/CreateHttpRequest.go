@@ -15,7 +15,7 @@ func CreateHttpRequest(method, url string) (*http.Request) {
 
 	// don't use Authorization and X-MAL-CLIENT-ID in conjuction
 	//req.Header.Add("Authorization", "Bearer " +  config.C.MAL_CLIENT_ID)
-	req.Header.Add("X-MAL-CLIENT-ID", config.C.MAL_CLIENT_ID)
+	req.Header.Add("X-MAL-CLIENT-ID", config.C.MalClientId)
 
 	return req
 }

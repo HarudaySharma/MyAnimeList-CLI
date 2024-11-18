@@ -37,7 +37,7 @@ func FetchSeasonalAnime(p FetchSeasonalAnimeParams) *t.NativeSeasonalAnime {
 	client := http.Client{}
 
 	url := fmt.Sprintf("%s/anime/season/%s/%s?sort=%s&limit=%v&offset=%v&fields=%s",
-		c.C.MAL_API_URL,
+		c.C.MalApiUrl,
 		p.Year,
 		p.Season,
 		u.ConvertToCommaSeperatedString(p.Sort),

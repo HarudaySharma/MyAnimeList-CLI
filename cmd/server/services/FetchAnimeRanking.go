@@ -41,7 +41,7 @@ func FetchAnimeRanking(p FetchAnimeRankingParams) *t.NativeAnimeRanking {
 
 	fields := u.ConvertToCommaSeperatedString(p.Fields)
 	url := fmt.Sprintf("%s/anime/ranking?ranking_type=%s&limit=%v&offset=%v&fields=%s",
-		config.C.MAL_API_URL,
+		config.C.MalApiUrl,
 		p.Ranking,
 		p.Limit,
 		p.Offset,

@@ -41,7 +41,7 @@ func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 	encodedQuery := url.QueryEscape(p.Query)
 	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
 	url := fmt.Sprintf("%s/anime?q=%s&limit=%v&offset=%v&fields=%v",
-		config.C.MAL_API_URL,
+		config.C.MalApiUrl,
 		encodedQuery,
 		p.Limit,
 		p.Offset,
