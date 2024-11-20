@@ -11,6 +11,7 @@ func StartServer(port string) {
 	log.Printf("server running on http://localhost:%s", port)
 
 	// create request routez
+
 	http.HandleFunc("/api/anime-list", handlers.GETAnimeList)
     // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
     http.HandleFunc("/api/anime/", handlers.GETAnimeDetails)
@@ -18,6 +19,10 @@ func StartServer(port string) {
     // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
     http.HandleFunc("/api/anime/seasonal/", handlers.GETSeasonalAnime)
 
+
+    // user specific routes
+	http.HandleFunc("GET /api/auth", handlers.AuthCallback)
+	http.HandleFunc("GET /api/user", handlers.GETUserInfo)
 
 	// SERVER
 	s := http.Server{

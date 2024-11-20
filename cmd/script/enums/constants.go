@@ -13,5 +13,6 @@ var (
 
 func init() {
     ApiUrl = fmt.Sprintf("http://localhost:%s/api", embedfiles.DaemonPort)
+
 }
 

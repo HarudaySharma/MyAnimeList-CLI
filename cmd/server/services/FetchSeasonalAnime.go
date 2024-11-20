@@ -47,7 +47,7 @@ func FetchSeasonalAnime(p FetchSeasonalAnimeParams) *t.NativeSeasonalAnime {
 	)
 
 	log.Println(url)
-	req := u.CreateHttpRequest("GET", url)
+	req := u.CreatePublicHttpRequest("GET", url)
 
 	res, err := client.Do(req)
 	if err != nil {

@@ -47,7 +47,7 @@ func FetchAnimeList(p FetchAnimeListParams) *t.NativeAnimeList {
 		p.Offset,
 		fieldsStr,
 	)
-	req := u.CreateHttpRequest("GET", url)
+	req := u.CreatePublicHttpRequest("GET", url)
 
 	res, err := client.Do(req)
 	if err != nil {
