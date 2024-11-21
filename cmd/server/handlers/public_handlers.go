@@ -13,15 +13,6 @@ import (
 	u "github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 )
 
-/* TODO: OAuth
-    - user should first of all give permission to the app to modify/access it's mal data.
-        1. send user to give permission page.
-        2. get an authorization code obtained after permission grant
-            - via callback url to (localhost) or,
-            - let the user give it themself.
-        3. save the auth_code and code_challenge/code_verifier.
-        4. now whenever accessing the user data, use these auth code and
-*/
 /*
 GET anime list
   - ROUTE: /api/anime/anime-list?q="query.."&limit="[1, 100]"&offset="[0, 99]"

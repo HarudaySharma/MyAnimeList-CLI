@@ -286,3 +286,59 @@ type AnimeDetails interface {
 type AnimeList interface {
 	NativeSeasonalAnime | NativeAnimeList | NativeAnimeRanking
 }
+
+/*********************************/
+/*********************************/
+/****** USER SPECIFIC TYPES ******/
+/*********************************/
+/*********************************/
+
+type MALUserDetails struct {
+	Id              int64     `json:"id"`
+	Name            string    `json:"name"`
+	Location        string    `json:"location"`
+	JoinedAt        time.Time `json:"joined_at"`
+	AnimeStatistics struct {
+		NumItemsWatching    float64 `json:"num_items_watching"`
+		NumItemsCompleted   float64 `json:"num_items_completed"`
+		NumItemsOnHold      float64 `json:"num_items_on_hold"`
+		NumItemsDropped     float64 `json:"num_items_dropped"`
+		NumItemsPlanToWatch float64 `json:"num_items_plan_to_watch"`
+		NumItems            float64 `json:"numItems"`
+		NumDaysWatched      float64 `json:"num_days_watched"`
+		NumDaysWatching     float64 `json:"num_days_watching"`
+		NumDaysCompleted    float64 `json:"num_days_completed"`
+		NumDaysOnHold       float64 `json:"num_days_on_hold"`
+		NumDaysDropped      float64 `json:"num_days_dropped"`
+		NumDays             float64 `json:"numDays"`
+		NumEpisodes         float64 `json:"numEpisodes"`
+		NumTimesRewatched   float64 `json:"num_times_rewatched"`
+		MeanScore           float64 `json:"meanScore"  `
+	} `json:"anime_statistics"`
+
+	Error string `json:"error"`
+}
+
+type NativeUserDetails struct {
+	Id              int64     `json:"id"`
+	Name            string    `json:"name"`
+	Location        string    `json:"location"`
+	JoinedAt        time.Time `json:"joined_at"`
+	AnimeStatistics struct {
+		NumItemsWatching    float64 `json:"num_items_watching"`
+		NumItemsCompleted   float64 `json:"num_items_completed"`
+		NumItemsOnHold      float64 `json:"num_items_on_hold"`
+		NumItemsDropped     float64 `json:"num_items_dropped"`
+		NumItemsPlanToWatch float64 `json:"num_items_plan_to_watch"`
+		NumItems            float64 `json:"numItems"`
+		NumDaysWatched      float64 `json:"num_days_watched"`
+		NumDaysWatching     float64 `json:"num_days_watching"`
+		NumDaysCompleted    float64 `json:"num_days_completed"`
+		NumDaysOnHold       float64 `json:"num_days_on_hold"`
+		NumDaysDropped      float64 `json:"num_days_dropped"`
+		NumDays             float64 `json:"numDays"`
+		NumEpisodes         float64 `json:"numEpisodes"`
+		NumTimesRewatched   float64 `json:"num_times_rewatched"`
+		MeanScore           float64 `json:"meanScore"  `
+	} `json:"anime_statistics"`
+}

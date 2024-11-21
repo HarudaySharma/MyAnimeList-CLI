@@ -22,7 +22,7 @@ func StartServer(port string) {
 
     // user specific routes
 	http.HandleFunc("GET /api/auth", handlers.AuthCallback)
-	http.HandleFunc("GET /api/user", handlers.GETUserInfo)
+	http.HandleFunc("GET /api/user", handlers.GETUserDetails)
 
 	// SERVER
 	s := http.Server{
