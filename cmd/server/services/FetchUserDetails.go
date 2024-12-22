@@ -11,11 +11,13 @@ import (
 	u "github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 )
 
+// FIX:
 func FetchUserDetails() *t.NativeUserDetails {
 	client := http.Client{}
 
-	url := fmt.Sprintf("%s/users/@me",
+	url := fmt.Sprintf("%s/users/@me?fields=%s",
 		c.C.MalApiUrl,
+		"anime_statistics",
 	)
 	log.Println(url)
 	req := u.CreateUserHttpRequest("GET", url)
@@ -53,6 +55,7 @@ func convertToNativeUserDetails(data *t.MALUserDetails) *t.NativeUserDetails {
 
 	convertedData.Id = data.Id
 	convertedData.Name = data.Name
+	convertedData.Picture = data.Picture
 	convertedData.Location = data.Location
 	convertedData.AnimeStatistics = data.AnimeStatistics
 	convertedData.JoinedAt = data.JoinedAt
@@ -62,7 +65,8 @@ func convertToNativeUserDetails(data *t.MALUserDetails) *t.NativeUserDetails {
 
 func CheckInvalidAccessToken(v any) bool {
 	if d, ok := v.(t.MALUserDetails); ok {
-		if d.Error == "invalid_token" {
+		if d.Error == "invalid_token" || d.Error == "forbidden" {
+			log.Printf("error: %+v", d.Error)
 			return true
 		}
 	}

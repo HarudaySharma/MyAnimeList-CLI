@@ -44,7 +44,10 @@ func AuthCallback(w http.ResponseWriter, r *http.Request) {
 		AuthCodeOrRefreshToken: authCode,
 	})
 	if err != nil {
-		log.Fatal(err)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "{\"error\": \"%s\", \"hint\": \"retry giving access\"}", err)
+		log.Println(err)
+		return
 	}
 
 	log.Println("access_token: ", accessToken)
@@ -64,6 +67,8 @@ func AuthCallback(w http.ResponseWriter, r *http.Request) {
 	log.Println("saved access_token and refresh_token to config file")
 
 	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "{\"message\": \"operation successfull, use the client application as desired\"}")
+
 	return
 
 }
@@ -74,8 +79,12 @@ func GETUserDetails(w http.ResponseWriter, r *http.Request) {
 
 		if config.C.MalAuthCode == "" {
 			// user has not given permissions to access there data.
-			fmt.Fprint(w, "please give permission first")
 			w.WriteHeader(http.StatusUnauthorized)
+			fmt.Fprint(w, `{
+                    "error": "authorization code not found",
+                    "message": "please give authorization to access your mal data ",
+                    "hint": "run mal-cli me login"
+                }`)
 			return
 		}
 	}

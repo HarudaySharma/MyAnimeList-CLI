@@ -25,12 +25,14 @@
     - [x] mal-cli anime [ranking|seasonal] "search title"
         - [x] user will see the list of anime matching the search (fzf)
         - [x] on selecting one of them, (if options are given) they will get the details of the selection
-    - [ ] show anime details on list selection step.
+    - [x] show anime details on list selection step.
 
 
 #### Short Term Goal
 
-- [x] complete the public routes handling and then create a client capable of requesting data from those public routes
+- [ ] show the user data. (mal-cli me)
+    - for now use tview to show the user's data.
+        - in future use fzf to let the user select the lists. and also see their profile data (in the preview seciton)
 
 ---
 
@@ -38,6 +40,7 @@
 - search
 - seasonal
 - ranking
+- me
 
 
 > [!NOTE]
