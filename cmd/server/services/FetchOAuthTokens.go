@@ -16,7 +16,7 @@ import (
 type GrantType string
 
 const (
-	GrantTypeAuthorizationCode GrantType = "authorization_code"
+	GrantTypeAuthorizationCode GrantType = "authorization_code" // only used when user give access for the first time
 	GrantTypeRefreshToken      GrantType = "refresh_token"
 )
 
