@@ -2,6 +2,8 @@ package types
 
 import (
 	"time"
+
+	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
 )
 
 type AlternativeTitles struct {
@@ -343,4 +345,31 @@ type NativeUserDetails struct {
 		NumTimesRewatched   float64 `json:"num_times_rewatched"`
 		MeanScore           float64 `json:"mean_score"  `
 	} `json:"anime_statistics"`
+}
+
+type MALUserAnimeList struct {
+	Data []struct {
+		Node       MALDataNode `json:"node"`
+		ListStatus UserListStatus    `json:"list_status"`
+	} `json:"data"`
+
+    Paging Page `json:"paging"`
+}
+
+type UserListStatus struct {
+	Status             enums.UserAnimeListStatus `json:"status"`
+	Score              int16                     `json:"score"`
+	NumWatchedEpisodes int16                     `json:"num_watched_episodes"`
+	IsRewatching       bool                      `json:"is_rewatching"`
+	UpdatedAt          time.Time                 `json:"updated_at"`
+}
+
+type UserAnimeListDataNode struct {
+    Node       AnimeListDataNode `json:"node"`
+    ListStatus UserListStatus    `json:"list_status"`
+}
+
+type NativeUserAnimeList struct {
+    Data []UserAnimeListDataNode `json:"data"`
+    Paging Page `json:"paging"`
 }
