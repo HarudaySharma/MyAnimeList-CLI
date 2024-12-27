@@ -11,10 +11,11 @@ import (
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	e "github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
 	p "github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
+	pkgU "github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 )
 
 func Test_GETUserAnimeList(t *testing.T) {
-    // TODO: test the sort param too
+	// TODO: test the sort param too
 	var status e.UserAnimeListStatus = ""
 
 	sort := make([]e.UserAnimeListSortOption, 0)
@@ -76,14 +77,13 @@ func Test_GETUserAnimeList(t *testing.T) {
 		count := strings.Count(string(jsonData), `"id"`)
 		fmt.Println("Total Anime Count := ", count)
 		fmt.Println("--------------------------------------------------------")
-        if count == 0 {
-            t.Fail();
-            t.Log("no anime should be expected")
-        }
+		if count == 0 {
+			t.Fail()
+			t.Log("no anime should be expected")
+		}
 
 	}
 }
-
 
 func Test_GETUserInfo(t *testing.T) {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:42069/api/user"))
@@ -111,7 +111,7 @@ func Test_UserHandlers(t *testing.T) {
 
 	fmt.Println("Redirecting to your browser for authorization...")
 
-	err := p.OpenURL(url)
+	err := pkgU.OpenURL(url)
 	if err != nil {
 		fmt.Println("Failed to open browser:", err)
 		fmt.Println("Please manually visit the URL below to authorize:")
@@ -161,4 +161,3 @@ func fetchUserAnimeList(status e.UserAnimeListStatus, sort []e.UserAnimeListSort
 	jsonData, _ := json.MarshalIndent(data, "\t", " ")
 	return string(jsonData)
 }
-

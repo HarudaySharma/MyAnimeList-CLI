@@ -63,6 +63,165 @@ func fzfPreview() string {
     `
 }
 
+func SaveUserData(filePath string, userD *types.NativeUserDetails) error {
+	stats := strings.Builder{}
+
+	stats.WriteString(fmt.Sprintf(`
+        echo "%s 📊 Anime Stats 📊 %s"
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "-"
+            ll=$((ll + 1))
+        done
+        echo
+        echo "%sTotal Episodes%s: %.0f"
+        echo "%sMean Score%s: %.2f"
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "-"
+            ll=$((ll + 1))
+        done
+        echo
+        echo "%sTotal Days Watched%s: %.0f"
+        echo "%sTotal Days Watching%s: %.0f"
+        echo "%sTotal Days Completed%s: %.0f"
+        echo "%sTotal Days OnHold%s: %.0f"
+        echo "%sTotal Days Dropped%s: %.0f"
+        echo "%sTotal Days Count%s: %.0f"
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "-"
+            ll=$((ll + 1))
+        done
+        echo
+        echo "%sTotal Anime Completed%s: %.0f"
+        echo "%sTotal Anime Watching%s: %.0f"
+        echo "%sTotal Anime Plan To Watch%s: %.0f"
+        echo "%sTotal Anime OnHold%s: %.0f"
+        echo "%sTotal Anime Dropped%s: %.0f"
+        echo "%sTotal Anime Rewatched%s: %.0f"
+        echo "%sTotal Anime Count%s: %.0f"
+        echo
+        `,
+		colors.Red, colors.Reset,
+
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumEpisodes,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.MeanScore,
+
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumDaysWatched,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumDaysWatching,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumDaysCompleted,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumDaysOnHold,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumDaysDropped,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumDays,
+
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumItemsCompleted,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumItemsWatching,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumItemsPlanToWatch,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumItemsDropped,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumItemsOnHold,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumTimesRewatched,
+		colors.Cyan, colors.Reset,
+		userD.AnimeStatistics.NumItems,
+	))
+
+	script := fmt.Sprintf(`
+        if command -v fold > /dev/null 2>&1; then
+            wrap() {
+                fold -w "$1"
+            }
+        else
+            wrap() {
+                cat
+            }
+        fi
+
+        cols=$FZF_PREVIEW_COLUMNS
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "─"
+            ll=$((ll + 1))
+        done
+        echo
+        echo "%sID:%s %d" | wrap $(($cols + 10))
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "─"
+            ll=$((ll + 1))
+        done
+        echo
+        echo "%sName:%s %s" | wrap $(($cols + 10))
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "─"
+            ll=$((ll + 1))
+        done
+        echo
+        echo "%sJoined At:%s %s" | wrap $(($cols + 10))
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "─"
+            ll=$((ll + 1))
+        done
+        echo
+        echo "%sLocation:%s %s" | wrap $(($cols + 10))
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "─"
+            ll=$((ll + 1))
+        done
+        ll=2
+        while [ "$ll" -le "$cols" ]; do
+            echo -n -e  "─"
+            ll=$((ll + 1))
+        done
+        echo
+        %s
+    `,
+
+		colors.Red, colors.Reset,
+		userD.Id,
+		colors.Red, colors.Reset,
+		userD.Name,
+		colors.Red, colors.Reset,
+		userD.JoinedAt,
+		colors.Red, colors.Reset,
+		userD.Location,
+		stats.String(),
+	)
+
+	dir := filePath[:len(filePath)-len("/"+filePath[strings.LastIndex(filePath, "/")+1:])]
+
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create directories: %v", err)
+	}
+
+	out, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = out.Write([]byte(script))
+
+	return err
+}
+
 func SavePreviewData(filePath string, node types.AnimeListDataNode) error {
 	titleJP := "-"
 	titleEN := "-"

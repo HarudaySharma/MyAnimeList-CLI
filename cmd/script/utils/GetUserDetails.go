@@ -10,23 +10,38 @@ import (
 )
 
 type NativeUserDetailsParams struct {
-    carry *types.NativeUserDetails
+	UserDetails *types.NativeUserDetails
 }
-func GetUserDetails(p NativeUserDetailsParams) (error) {
-	// - ROUTE: /api/anime/season/{year}/{season}?limit?offset?sort?fields
-	url := fmt.Sprintf("%s/user/",
+
+func GetUserDetails(p NativeUserDetailsParams) error {
+	// - ROUTE: /api/user
+	url := fmt.Sprintf("%s/user",
 		enums.ApiUrl,
 	)
 
 	res, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("%v\n****ERROR GETTING SEASONAL ANIME LIST FROM SERVER****", err)
+		return fmt.Errorf("%v\n****ERROR GETTING USER DETAILS FROM SERVER****", err)
 	}
 
-	if err := json.NewDecoder(res.Body).Decode(p.carry); err != nil {
+	defer res.Body.Close()
+
+	if res.StatusCode >= 400 && res.StatusCode < 600 {
+		var v any
+		if err := json.NewDecoder(res.Body).Decode(v); err != nil {
+			return fmt.Errorf("Json parsing error of anime-list \n %v", err)
+		}
+        jsonData, _ := json.MarshalIndent(v, "\t", " ")
+
+		return fmt.Errorf("%s", jsonData)
+	}
+
+	if err := json.NewDecoder(res.Body).Decode(p.UserDetails); err != nil {
 		return fmt.Errorf("Json parsing error of anime-list \n %v", err)
 	}
 
-    return nil
+	defer res.Body.Close()
+
+	return nil
 
 }
