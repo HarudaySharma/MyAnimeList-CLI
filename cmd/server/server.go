@@ -24,6 +24,7 @@ func StartServer(port string) {
 	http.HandleFunc("GET /api/callback", handlers.AuthCallback)
 	http.HandleFunc("GET /api/auth", handlers.AuthCallback)
 	http.HandleFunc("GET /api/user", handlers.GETUserDetails)
+	http.HandleFunc("GET /api/user/anime-list", handlers.GETUserAnimeList)
 
 	// SERVER
 	s := http.Server{
