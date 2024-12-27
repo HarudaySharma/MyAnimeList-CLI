@@ -27,6 +27,8 @@ NOTE: OAuth
     4. now whenever accessing the user data, use these auth code and
 */
 func AuthCallback(w http.ResponseWriter, r *http.Request) {
+    log.Println("*****AuthCallback Handler called*****")
+
 	authCode := r.URL.Query().Get("code")
 	if authCode == "" {
 		log.Println("Invalid authCode")
@@ -85,6 +87,8 @@ func AuthCallback(w http.ResponseWriter, r *http.Request) {
 }
 
 func GETUserDetails(w http.ResponseWriter, r *http.Request) {
+	log.Println("*****GETUserDetails Handler called*****")
+
 	if config.C.MalAuthCode == "" {
 		config.C.MalAuthCode = pkgUtl.ReadConfigFile("auth_code")
 
@@ -120,6 +124,7 @@ func GETUserDetails(w http.ResponseWriter, r *http.Request) {
 
 // GET https://api.myanimelist.net/v2/users/{user_name | @me}/animelist
 func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
+	log.Println("*****GETUserAnimeList Handler called*****")
 	// query params
 
 	q := r.URL.Query()
@@ -142,7 +147,8 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
                 "error": "invalid query param 'status'",
                 "hint": "available sort options { %v }"
             }`,
-				pkgUtl.ConvertToCommaSeperatedString(pkgE.UserAnimeListStatuses()))
+				pkgUtl.ConvertToCommaSeperatedString(pkgE.UserAnimeListStatuses()),
+			)
 			return
 		}
 	}
@@ -173,7 +179,7 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    // parsing limits and offsets
+	// parsing limits and offsets
 	limitStr := q.Get("limit")
 	offsetStr := q.Get("offset")
 	limit := 0
@@ -215,12 +221,12 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := srv.FetchUserAnimeList(srv.FetchUserAnimeListParams{
-        Status: parsedUALStatus,
-        Sort: parsedUALSortOptions,
-        Fields: parsedFields,
-        Limit: int16(limit),
-        Offset: int16(offset),
-    })
+		Status: parsedUALStatus,
+		Sort:   parsedUALSortOptions,
+		Fields: parsedFields,
+		Limit:  int16(limit),
+		Offset: int16(offset),
+	})
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -234,7 +240,6 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("content-type", "application/json")
 	fmt.Fprint(w, string(jsonData))
-
 }
 
 // PUT https://api.myanimelist.net/v2/anime/{anime_id}/my_list_statusc

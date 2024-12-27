@@ -14,6 +14,7 @@ import (
 )
 
 func Test_GETUserAnimeList(t *testing.T) {
+    // TODO: test the sort param too
 	var status e.UserAnimeListStatus = ""
 
 	sort := make([]e.UserAnimeListSortOption, 0)
@@ -24,67 +25,65 @@ func Test_GETUserAnimeList(t *testing.T) {
 
 	{ // all user anime list
 		fmt.Println("Fetching all user anime list...")
-		FetchUserAnimeList(status, sort, detailFields, t)
+		jsonData := fetchUserAnimeList(status, sort, detailFields, t)
+
+		count := strings.Count(string(jsonData), `"id"`)
+		fmt.Println("Total Anime Count := ", count)
+		fmt.Println("--------------------------------------------------------")
 	}
 	{ // dropped anime list
 		status = e.ULS_Dropped
 		fmt.Println("Fetching dropped user anime list...")
-		FetchUserAnimeList(status, sort, detailFields, t)
+		jsonData := fetchUserAnimeList(status, sort, detailFields, t)
+
+		count := strings.Count(string(jsonData), `"id"`)
+		fmt.Println("Total Anime Count := ", count)
+		fmt.Println("--------------------------------------------------------")
 	}
 	{ // watching anime list
 		status = e.ULS_Watching
 		fmt.Println("Fetching watching user anime list...")
-		FetchUserAnimeList(status, sort, detailFields, t)
+		jsonData := fetchUserAnimeList(status, sort, detailFields, t)
+
+		count := strings.Count(string(jsonData), `"id"`)
+		fmt.Println("Total Anime Count := ", count)
+		fmt.Println("--------------------------------------------------------")
 	}
 	{ // onHold anime list
 		status = e.ULS_OnHold
 		fmt.Println("Fetching On Hold user anime list...")
-		FetchUserAnimeList(status, sort, detailFields, t)
+		jsonData := fetchUserAnimeList(status, sort, detailFields, t)
+
+		count := strings.Count(string(jsonData), `"id"`)
+		fmt.Println("Total Anime Count := ", count)
+		fmt.Println("--------------------------------------------------------")
 	}
 	{ // plan_to_watch anime list
 		status = e.ULS_PlanToWatch
 		fmt.Println("Fetching plan to watch user anime list...")
-		FetchUserAnimeList(status, sort, detailFields, t)
-	}
+		jsonData := fetchUserAnimeList(status, sort, detailFields, t)
 
+		count := strings.Count(string(jsonData), `"id"`)
+		fmt.Println("Total Anime Count := ", count)
+		fmt.Println("--------------------------------------------------------")
+	}
 
 	{ // error prone
 		fmt.Println("Fetching not listed user anime list...")
-        status = "empty"
-        data := FetchUserAnimeList(status, sort, detailFields, t)
-        fmt.Println(data)
+		status = "empty"
+		jsonData := fetchUserAnimeList(status, sort, detailFields, t)
+
+		count := strings.Count(string(jsonData), `"id"`)
+		fmt.Println("Total Anime Count := ", count)
+		fmt.Println("--------------------------------------------------------")
+        if count == 0 {
+            t.Fail();
+            t.Log("no anime should be expected")
+        }
+
 	}
 }
 
-func FetchUserAnimeList(status e.UserAnimeListStatus, sort []e.UserAnimeListSortOption, detailFields []es.AnimeDetailField, t *testing.T) string {
-	url := fmt.Sprintf("http://localhost:42069/api/user/anime-list?status=%s&sort=%s&limit=%d&fields=%s",
-		status,
-		p.ConvertToCommaSeperatedString(sort),
-		1000,
-		p.ConvertToCommaSeperatedString(detailFields),
-	)
-
-	resp, err := http.Get(url)
-	if err != nil {
-		fmt.Println(err)
-		t.FailNow()
-		return ""
-	}
-
-	var data any
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		fmt.Println(err)
-		t.FailNow()
-	}
-
-	jsonData, _ := json.MarshalIndent(data, "\t", " ")
-	count := strings.Count(string(jsonData), "id")
-	//fmt.Println(string(jsonData))
-	fmt.Println("Total Anime Count := ", count)
-	fmt.Println("--------------------------------------------------------")
-
-    return string(jsonData)
-}
 
 func Test_GETUserInfo(t *testing.T) {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:42069/api/user"))
@@ -137,3 +136,29 @@ func Test_UserHandlers(t *testing.T) {
 			fmt.Println(err)
 		} */
 }
+
+func fetchUserAnimeList(status e.UserAnimeListStatus, sort []e.UserAnimeListSortOption, detailFields []es.AnimeDetailField, t *testing.T) string {
+	url := fmt.Sprintf("http://localhost:42069/api/user/anime-list?status=%s&sort=%s&limit=%d&fields=%s",
+		status,
+		p.ConvertToCommaSeperatedString(sort),
+		1000,
+		p.ConvertToCommaSeperatedString(detailFields),
+	)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println(err)
+		t.FailNow()
+		return ""
+	}
+
+	var data any
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		fmt.Println(err)
+		t.FailNow()
+	}
+
+	jsonData, _ := json.MarshalIndent(data, "\t", " ")
+	return string(jsonData)
+}
+
