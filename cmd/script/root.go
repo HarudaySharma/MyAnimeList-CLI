@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	usercommands "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/user-commands"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/spf13/cobra"
 )
@@ -51,4 +52,5 @@ func init() {
 		availableOptionsStr.String(),
 	)))
 
+    rootCmd.AddCommand(usercommands.MeCmd)
 }

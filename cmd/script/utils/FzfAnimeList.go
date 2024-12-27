@@ -37,20 +37,20 @@ func FzfAnimeList(p FzfAnimeListParams) (int, error) {
 		plainKeyStr := strings.Builder{}
 		formattedKeyStr := strings.Builder{}
 
-        // so to not mess with filepath
+		// so to not mess with filepath
 		val.Title = strings.ReplaceAll(val.Title, "\\", "-")
 		val.Title = strings.ReplaceAll(val.Title, "/", "-")
 
-        formattedKeyStr.WriteString(val.Title)
-        plainKeyStr.WriteString(val.Title)
+		formattedKeyStr.WriteString(val.Title)
+		plainKeyStr.WriteString(val.Title)
 
 		startSeason := val.CustomFields["start_season"]
 		if seasonData, ok := startSeason.(map[string]interface{}); ok {
 			season, _ := seasonData["season"]
 			year, _ := seasonData["year"]
 
-            formattedKeyStr.WriteString("\t")
-            plainKeyStr.WriteString(" ")
+			formattedKeyStr.WriteString("\t")
+			plainKeyStr.WriteString(" ")
 			plainKeyStr.WriteString(fmt.Sprintf("[ %v ~ %v ]", year, season))
 			formattedKeyStr.WriteString(fmt.Sprintf("%s[ %v ~ %v ]%s", colors.Purple, year, season, colors.Reset))
 		}
@@ -95,7 +95,7 @@ func FzfAnimeList(p FzfAnimeListParams) (int, error) {
 		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, nextListStr, colors.Reset)))
 	}
 
-	output, err := useFzf(titleList, "search results")
+	output, err := useFzf(titleList, "search results", "")
 	if err != nil {
 		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
@@ -182,7 +182,7 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 		titleList = append(titleList, strings.TrimSpace(fmt.Sprintf("%s%s%s", colors.Purple, nextListStr, colors.Reset)))
 	}
 
-	output, err := useFzf(titleList, p.RankingType)
+	output, err := useFzf(titleList, p.RankingType, "")
 	if err != nil {
 		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
@@ -207,20 +207,45 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 	return -1, nil
 }
 
-func useFzf(input []string, borderLabel string) (string, error) {
+func FzfUserDetails(userD *types.NativeUserDetails) {
+	url := fmt.Sprintf("%v", userD.Picture)
 
-	fzf := exec.Command("fzf",
-		"--no-sort",
-		"--cycle",
-		"--ansi",
-		"+m",
-		"--layout=reverse",
-		"--border=rounded",
-		"--preview-window=right:30%",
-		"--wrap",
-		fmt.Sprintf("--border-label=%s", borderLabel),
-		fmt.Sprintf(`--preview=
-            %s
+	go func() {
+		// save preview images to cache
+		if err := DownloadImage(url, imageDir+"/user/"+"pfp"); err != nil {
+			fmt.Println(err)
+			fmt.Println("error dowloading image")
+		}
+	}()
+	go func() {
+		// save user data to cache
+		SaveUserData(dataDir+"/user/"+"details", userD)
+
+	}()
+
+	previewScript := fmt.Sprintf(`
+        if [ -s "%s/user/pfp" ]; then
+            fzf-preview "%s/user/pfp"
+        else
+            echo "Loading User Image..."
+        fi
+
+        if [ -s "%s/user/details" ]; then
+            source "%s/user/details"
+        else
+            echo "Loading User Data..."
+        fi
+    `,
+		imageDir, imageDir,
+		dataDir, dataDir,
+	)
+
+	useFzf(make([]string, 0), "user info", previewScript)
+}
+
+func useFzf(input []string, borderLabel string, previewScript string) (string, error) {
+
+	defaultPreviewScript := fmt.Sprintf(`
             title=$(echo {} | tr -d '[:space:]')
             show_image_previews="%s"
             if [ "${show_image_previews}" = "true" ];then
@@ -239,15 +264,34 @@ func useFzf(input []string, borderLabel string) (string, error) {
             else
                 echo Loading Data...
             fi
+    `,
+		"true",
+		imageDir, imageDir,
+		imageDir, imageDir,
+		imageDir, imageDir,
+		dataDir, dataDir,
+	)
 
+	if previewScript == "" {
+		previewScript = defaultPreviewScript
+	}
 
+	fzf := exec.Command("fzf",
+		"--no-sort",
+		"--cycle",
+		"--ansi",
+		"+m",
+		"--layout=reverse",
+		"--border=rounded",
+		"--preview-window=right:30%",
+		"--wrap",
+		fmt.Sprintf("--border-label=%s", borderLabel),
+		fmt.Sprintf(`--preview=
+                %s
+                %s
             `,
 			fzfPreview(),
-			"true",
-			imageDir, imageDir,
-			imageDir, imageDir,
-			imageDir, imageDir,
-			dataDir, dataDir,
+			previewScript,
 		),
 	)
 	fzf.Stdin = strings.NewReader(strings.Join(input, "\n"))
