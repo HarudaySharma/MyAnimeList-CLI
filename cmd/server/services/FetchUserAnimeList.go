@@ -7,42 +7,40 @@ import (
 	"net/http"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/config"
-	e "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
+	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
 	t "github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 	u "github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 )
 
-const (
-	default_list_size int16 = 100
-	max_list_size     int16 = 1000
-	default_offset    int16 = 0
-	max_offset        int16 = 1000
-)
-
 type FetchUserAnimeListParams struct {
 	Status enums.UserAnimeListStatus
 	Sort   []enums.UserAnimeListSortOption
-	Fields []e.AnimeDetailField
-	Limit  int16
-	Offset int16
+	Fields []es.AnimeDetailField
+	Limit  int
+	Offset int
 }
 
 func FetchUserAnimeList(p FetchUserAnimeListParams) *t.NativeUserAnimeList {
 	if p.Limit == 0 {
-		p.Limit = default_list_size
+		p.Limit = es.User_Default_List_Size
 	}
-	if p.Limit > max_list_size {
-		p.Limit = max_list_size
+	if p.Limit > es.User_Max_List_Size {
+		p.Limit = es.User_Max_List_Size
 	}
-    if p.Offset < 0 || p.Offset > 1000 {
-        p.Offset = default_offset
-    }
+	if p.Offset < 0 || p.Offset > es.User_List_Max_Offset {
+		p.Offset = es.User_List_Default_Offset
+	}
 
 	p.Fields = append(p.Fields, "list_status")
 	fieldsStr := u.ConvertToCommaSeperatedString(p.Fields)
 
-    sortStr := u.ConvertToCommaSeperatedString(p.Sort)
+	sortStr := u.ConvertToCommaSeperatedString(p.Sort)
+
+	// NOTE: if no status is provided then only mal api responses with all the user's anime list
+	if p.Status == enums.ULS_ALL {
+		p.Status = ""
+	}
 
 	// create a client
 	client := http.Client{}
@@ -55,8 +53,9 @@ func FetchUserAnimeList(p FetchUserAnimeListParams) *t.NativeUserAnimeList {
 		p.Offset,
 		fieldsStr,
 	)
-	req := u.CreateUserHttpRequest("GET", url)
     log.Println(url)
+
+	req := u.CreateUserHttpRequest("GET", url)
 
 	res, err := client.Do(req)
 	if err != nil {

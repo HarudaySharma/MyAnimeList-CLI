@@ -9,6 +9,7 @@ import (
 
 	embedfiles "github.com/HarudaySharma/MyAnimeList-CLI/internal/shared/embedFiles"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/colors"
+	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 )
 
@@ -207,18 +208,21 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 	return -1, nil
 }
 
-func FzfUserDetails(userD *types.NativeUserDetails) {
-	url := fmt.Sprintf("%v", userD.Picture)
 
+// As this functions work is to generate preview script so
+// it must do all the necessary functions to make the script working
+func GenerateUserPreviewScript(userD *types.NativeUserDetails) string {
+
+    // save preview images to cache
 	go func() {
-		// save preview images to cache
+		url := fmt.Sprintf("%v", userD.Picture)
 		if err := DownloadImage(url, imageDir+"/user/"+"pfp"); err != nil {
 			fmt.Println(err)
 			fmt.Println("error dowloading image")
 		}
 	}()
+    // Show user data
 	go func() {
-		// save user data to cache
 		SaveUserData(dataDir+"/user/"+"details", userD)
 
 	}()
@@ -240,11 +244,30 @@ func FzfUserDetails(userD *types.NativeUserDetails) {
 		dataDir, dataDir,
 	)
 
-	useFzf(make([]string, 0), "user info", previewScript)
+	return previewScript
+
+}
+func FzfUserMenu(list []string, userD *types.NativeUserDetails) (enums.UserAnimeListStatus, error) {
+
+	previewScript := GenerateUserPreviewScript(userD)
+
+    // Show user the list from which they can choose
+	str, err := useFzf(list, "user info", previewScript)
+	if err != nil {
+        return "", err
+	}
+
+    chosenListType, valid := enums.ParseUserAnimeListStatus(str)
+    if !valid {
+        return "", err
+    }
+
+	return chosenListType, nil
 }
 
 func useFzf(input []string, borderLabel string, previewScript string) (string, error) {
 
+    // script for anime previews
 	defaultPreviewScript := fmt.Sprintf(`
             title=$(echo {} | tr -d '[:space:]')
             show_image_previews="%s"
