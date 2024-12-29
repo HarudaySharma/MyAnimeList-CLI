@@ -1,10 +1,13 @@
 package enums
 
-import "strings"
+import (
+	"strings"
+)
 
 type UserAnimeListStatus string
 
 const (
+	ULS_ALL    UserAnimeListStatus = "all"
 	ULS_Watching    UserAnimeListStatus = "watching"
 	ULS_Completed   UserAnimeListStatus = "completed"
 	ULS_OnHold      UserAnimeListStatus = "on_hold"
@@ -20,7 +23,7 @@ func UserAnimeListStatuses() []UserAnimeListStatus {
 }
 
 func ParseUserAnimeListStatus(option string) (UserAnimeListStatus, bool) {
-	option = strings.Trim(option, " ")
+	option = strings.TrimSpace(option)
 	if option == "" {
 		return "", false
 	}
@@ -33,11 +36,12 @@ func ParseUserAnimeListStatus(option string) (UserAnimeListStatus, bool) {
 
 func init() {
 	userAnimeListStatuses = []UserAnimeListStatus{
+        ULS_ALL,
+        ULS_Watching,
+		ULS_PlanToWatch,
 		ULS_OnHold,
 		ULS_Dropped,
-		ULS_Watching,
 		ULS_Completed,
-		ULS_PlanToWatch,
 	}
 
 	userAnimeListStatusMap = make(map[string]UserAnimeListStatus)

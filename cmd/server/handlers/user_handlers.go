@@ -27,7 +27,7 @@ NOTE: OAuth
     4. now whenever accessing the user data, use these auth code and
 */
 func AuthCallback(w http.ResponseWriter, r *http.Request) {
-    log.Println("*****AuthCallback Handler called*****")
+	log.Println("*****AuthCallback Handler called*****")
 
 	authCode := r.URL.Query().Get("code")
 	if authCode == "" {
@@ -135,9 +135,8 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 
 	if userAnimeListStatus == "" {
 		// return all the user anime list
-		parsedUALStatus = ""
-	}
-	if userAnimeListStatus != "" {
+		parsedUALStatus = pkgE.ULS_ALL
+	} else {
 		// parse the anime list type
 		var valid bool
 		parsedUALStatus, valid = pkgE.ParseUserAnimeListStatus(userAnimeListStatus)
@@ -153,6 +152,7 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	log.Println("here2")
 	// sort option
 	sortOptions := strings.ReplaceAll(q.Get("sort"), " ", "")
 	sortOptionArr := strings.Split(sortOptions, ",")
@@ -224,8 +224,8 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 		Status: parsedUALStatus,
 		Sort:   parsedUALSortOptions,
 		Fields: parsedFields,
-		Limit:  int16(limit),
-		Offset: int16(offset),
+		Limit:  limit,
+		Offset: offset,
 	})
 
 	jsonData, err := json.Marshal(data)

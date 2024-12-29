@@ -64,6 +64,7 @@ func fzfPreview() string {
 }
 
 func SaveUserData(filePath string, userD *types.NativeUserDetails) error {
+    // NOTE: Won't be caching the user details as it is subject to frequent change
 	stats := strings.Builder{}
 
 	stats.WriteString(fmt.Sprintf(`
@@ -223,6 +224,10 @@ func SaveUserData(filePath string, userD *types.NativeUserDetails) error {
 }
 
 func SavePreviewData(filePath string, node types.AnimeListDataNode) error {
+	if checkFileExists(filePath) {
+		return nil
+	}
+
 	titleJP := "-"
 	titleEN := "-"
 	altTitlesInter, _ := node.CustomFields[string(enums.AlternativeTitles)]
