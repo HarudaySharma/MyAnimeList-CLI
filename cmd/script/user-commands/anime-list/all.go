@@ -36,7 +36,7 @@ var AllCmd = &cobra.Command{
 			sortBy = 1 // anime_score
 		}
 
-		var animeList *types.NativeAnimeList
+		var animeList types.NativeUserAnimeList
 		var animeId int = -1 // will send a request to server every time it is "-1"
 
 		detailFields := make([]es.AnimeDetailField, 0)
@@ -47,10 +47,9 @@ var AllCmd = &cobra.Command{
 			for {
 
 				if animeId == -1 {
-					var userAnimeList types.NativeUserAnimeList
 
 					err := u.GetUserAnimeList(u.GetUserAnimeListParams[types.NativeUserAnimeList]{
-						AnimeList: &userAnimeList,
+						AnimeList: &animeList,
 						ListType:  listType,
 						Limit:     limit,
 						Offset:    offset,
@@ -64,11 +63,10 @@ var AllCmd = &cobra.Command{
 						os.Exit(1)
 					}
 
-					animeList = u.UserToNativeAnimeList(&userAnimeList)
 				}
 
-				animeId, err = u.FzfAnimeList(u.FzfAnimeListParams{
-					AnimeList: animeList,
+				animeId, err = u.FzfUserAnimeList(u.FzfUserAnimeListParams{
+					AnimeList: &animeList,
 					Limit:     limit,
 					Offset:    &offset,
 				})

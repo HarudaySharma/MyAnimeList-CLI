@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
@@ -63,8 +64,140 @@ func fzfPreview() string {
     `
 }
 
-func SaveUserData(filePath string, userD *types.NativeUserDetails) error {
-    // NOTE: Won't be caching the user details as it is subject to frequent change
+var userPfpLoc = imageDir + "/user/pfp"
+var userDataLoc = dataDir + "/user/details"
+
+func SaveUserPreviewData(userD *types.NativeUserDetails) error {
+	// NOTE: all the saving are being done according to the preview script written
+
+	// save preview images to cache
+	go func() {
+		url := fmt.Sprintf("%v", userD.Picture)
+		if err := DownloadImage(url, userPfpLoc); err != nil {
+			fmt.Println(err)
+			fmt.Println("error dowloading image")
+		}
+	}()
+
+	// NOTE: Won't be caching the user details as it is subject to frequent change
+	dataScript := GenerateUserDataScript(userD)
+
+	filePath := userDataLoc
+
+	dir := filePath[:len(filePath)-len("/"+filePath[strings.LastIndex(filePath, "/")+1:])]
+
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create directories: %v", err)
+	}
+
+	out, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = out.Write([]byte(dataScript))
+
+	return err
+}
+
+func SaveAnimePreviewData(key string, node types.AnimeListDataNode) error {
+	// NOTE: all the saving are being done according to the preview script written
+
+	mainPicture := node.CustomFields["main_picture"]
+	if mainPicture, ok := mainPicture.(map[string]interface{}); ok {
+		medium, _ := mainPicture["medium"]
+		url := fmt.Sprintf("%v", medium)
+		fileName := strings.ReplaceAll(key, " ", "")
+		fileName = strings.ReplaceAll(fileName, "\t", "")
+		fileName += filepath.Ext(url)
+
+		go func() {
+			// save preview images to cache
+			if err := DownloadImage(url, imageDir+"/"+fileName); err != nil {
+				fmt.Println(err)
+				fmt.Println("error dowloading image")
+			}
+		}()
+	}
+
+	dataFileName := strings.ReplaceAll(key, " ", "")
+	dataFileName = strings.ReplaceAll(dataFileName, "\t", "")
+	dataFilePath := dataDir + "/" + dataFileName
+
+	dataScript := GenerateAnimeDataPreviewScript(node)
+	if checkFileExists(dataFilePath) {
+		return nil
+	}
+
+	dir := dataFilePath[:len(dataFilePath)-len("/"+dataFilePath[strings.LastIndex(dataFilePath, "/")+1:])]
+
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create directories: %v", err)
+	}
+
+	out, err := os.Create(dataFilePath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = out.Write([]byte(dataScript))
+
+	return err
+}
+
+func SaveUserAnimePreviewData(key string, node types.UserAnimeListDataNode) error {
+	// NOTE: all the saving are being done according to the preview script written
+
+	mainPicture := node.Node.CustomFields["main_picture"]
+	if mainPicture, ok := mainPicture.(map[string]interface{}); ok {
+		medium, _ := mainPicture["medium"]
+		url := fmt.Sprintf("%v", medium)
+		fileName := strings.ReplaceAll(key, " ", "")
+		fileName = strings.ReplaceAll(fileName, "\t", "")
+		fileName += filepath.Ext(url)
+
+		go func() {
+			// save preview images to cache
+			if err := DownloadImage(url, imageDir+"/"+fileName); err != nil {
+				fmt.Println(err)
+				fmt.Println("error dowloading image")
+			}
+		}()
+	}
+
+	dataFileName := strings.ReplaceAll(key, " ", "")
+	dataFileName = strings.ReplaceAll(dataFileName, "\t", "")
+	dataFilePath := dataDir + "/" + dataFileName
+
+	dataScript := GenerateAnimeDataPreviewScript(node.Node)
+	dataScript += GenerateUserListStatusScript(node.ListStatus)
+	if checkFileExists(dataFilePath) {
+		return nil
+	}
+
+	dir := dataFilePath[:len(dataFilePath)-len("/"+dataFilePath[strings.LastIndex(dataFilePath, "/")+1:])]
+
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create directories: %v", err)
+	}
+
+	out, err := os.Create(dataFilePath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = out.Write([]byte(dataScript))
+
+	return err
+}
+
+func GenerateUserDataScript(userD *types.NativeUserDetails) string {
 	stats := strings.Builder{}
 
 	stats.WriteString(fmt.Sprintf(`
@@ -205,29 +338,10 @@ func SaveUserData(filePath string, userD *types.NativeUserDetails) error {
 		stats.String(),
 	)
 
-	dir := filePath[:len(filePath)-len("/"+filePath[strings.LastIndex(filePath, "/")+1:])]
-
-	err := os.MkdirAll(dir, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("failed to create directories: %v", err)
-	}
-
-	out, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = out.Write([]byte(script))
-
-	return err
+	return script
 }
 
-func SavePreviewData(filePath string, node types.AnimeListDataNode) error {
-	if checkFileExists(filePath) {
-		return nil
-	}
-
+func GenerateAnimeDataPreviewScript(node types.AnimeListDataNode) string {
 	titleJP := "-"
 	titleEN := "-"
 	altTitlesInter, _ := node.CustomFields[string(enums.AlternativeTitles)]
@@ -399,48 +513,116 @@ func SavePreviewData(filePath string, node types.AnimeListDataNode) error {
 		colors.Red, colors.Reset,
 		endDate,
 	)
-	/*
-	        #            while [ $ll -le $FZF_PREVIEW_COLUMNS ];do
-	        #        #echo -n -e "{get_true_fg("─",*SEPARATOR_COLOR,bold=False)}"
-	        #                echo -n -e "─"
-	        #                ((ll++))
-	        #            done
-	        #            echo
-	        #            echo "{get_true_fg('Episodes:',*HEADER_COLOR)} {(anime['episodes']) or 'UNKNOWN'}"
-	        #            echo "{get_true_fg('Start Date:',*HEADER_COLOR)} {anilist_data_helper.format_anilist_date_object(anime['startDate']).replace('"',SINGLE_QUOTE)}"
-	        #            echo "{get_true_fg('End Date:',*HEADER_COLOR)} {anilist_data_helper.format_anilist_date_object(anime['endDate']).replace('"',SINGLE_QUOTE)}"
-	        #            ll=2
-	        #            while [ $ll -le $FZF_PREVIEW_COLUMNS ];do
-	        #        #echo -n -e "{get_true_fg("─",*SEPARATOR_COLOR,bold=False)}"
-	        #                echo -n -e "─"
-	        #                ((ll++))
-	        #            done
-	        #            echo
-	        #            echo "{get_true_fg('Media List:',*HEADER_COLOR)} {mediaListName.replace('"',SINGLE_QUOTE)}"
-	        #            echo "{get_true_fg('Progress:',*HEADER_COLOR)} {progress}"
-	        #            ll=2
-	        #            while [ $ll -le $FZF_PREVIEW_COLUMNS ];do
-	        #        #echo -n -e "{get_true_fg("─",*SEPARATOR_COLOR,bold=False)}"
-	        #                echo -n -e "─"
-	        #                ((ll++))
-	        #            done
-		)) */
 
-	dir := filePath[:len(filePath)-len("/"+filePath[strings.LastIndex(filePath, "/")+1:])]
+	return script
+}
 
-	err := os.MkdirAll(dir, os.ModePerm)
-	if err != nil {
-		return fmt.Errorf("failed to create directories: %v", err)
+func GenerateUserListStatusScript(userListStatus types.UserListStatus) string {
+	if userListStatus == (types.UserListStatus{}) {
+		return ""
 	}
 
-	out, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
+	script := fmt.Sprintf(`
+            if command -v fold > /dev/null 2>&1; then
+                wrap() {
+                    fold -w "$1"
+                }
+            else
+                wrap() {
+                    cat
+                }
+            fi
 
-	_, err = out.Write([]byte(script))
+            cols=$FZF_PREVIEW_COLUMNS
 
-	return err
+            echo "%sUser List Status%s"
 
+            ll=2
+            while [ "$ll" -le "$cols" ]; do
+                echo -n -e  "-"
+                ll=$((ll + 1))
+            done
+            echo
+            echo "%sStatus:%s %s" | wrap $(($cols + 10))
+            echo "%sScore:%s %d" | wrap $(($cols + 10))
+            echo "%sEpisodes Watched:%s %d" | wrap $(($cols + 10))
+            ll=2
+            while [ "$ll" -le "$cols" ]; do
+                echo -n -e  "-"
+                ll=$((ll + 1))
+            done
+            echo
+            echo "%sRe-Watching:%s %v" | wrap $(($cols + 10))
+            echo "%sLast Updated:%s %s" | wrap $(($cols + 10))
+            echo
+        `,
+		colors.Red, colors.Reset,
+		colors.Cyan, colors.Reset,
+		userListStatus.Status,
+		colors.Cyan, colors.Reset,
+		userListStatus.Score,
+		colors.Cyan, colors.Reset,
+		userListStatus.NumWatchedEpisodes,
+		colors.Cyan, colors.Reset,
+		userListStatus.IsRewatching,
+		colors.Cyan, colors.Reset,
+		userListStatus.UpdatedAt,
+	)
+
+	return script
+}
+
+func GenerateUserPreviewScript() string {
+
+	previewScript := fmt.Sprintf(`
+        if [ -s "%s" ]; then
+            fzf-preview "%s"
+        else
+            echo "Loading User Image..."
+        fi
+
+        if [ -s "%s" ]; then
+            source "%s"
+        else
+            echo "Loading User Data..."
+        fi
+    `,
+		userPfpLoc,
+		userPfpLoc,
+		userDataLoc,
+		userDataLoc,
+	)
+
+	return previewScript
+}
+
+func GenerateAnimePreviewScript() string {
+	previewScript := fmt.Sprintf(`
+            title=$(echo {} | tr -d '[:space:]')
+            show_image_previews="%s"
+            if [ "${show_image_previews}" = "true" ];then
+                if [ -s "%s/${title}.jpg" ]; then
+                    fzf-preview "%s/${title}.jpg"
+                elif [ -s "%s/${title}.png" ]; then
+                    fzf-preview "%s/${title}.png"
+                elif [ -s "%s/${title}.webp" ]; then
+                    fzf-preview "%s/${title}.webp"
+                else
+                    echo Loading Image...
+                fi
+            fi
+            if [ -s "%s/${title}" ]; then
+                source "%s/${title}"
+            else
+                echo Loading Data...
+            fi
+    `,
+		"true",
+		imageDir, imageDir,
+		imageDir, imageDir,
+		imageDir, imageDir,
+		dataDir, dataDir,
+	)
+
+	return previewScript
 }
