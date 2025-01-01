@@ -46,7 +46,8 @@ var MeCmd = &cobra.Command{
 				os.Exit(1)
 			}
 
-			// basically treating these commands "run" functions as a utility function
+            // NOTE: basically treating these commands "run" functions as a utility function
+            //  so don't forget to pass all the context required for executing these commands
 			if chosenListType == pkgE.ULS_ALL {
 				animelist.AllCmd.Run(cmd, args)
 			} else if chosenListType == pkgE.ULS_Watching {

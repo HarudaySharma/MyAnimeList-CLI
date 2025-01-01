@@ -9,19 +9,22 @@ import (
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 )
 
-type NativeUserDetailsParams struct {
-	UserDetails *types.NativeUserDetails
+
+type GetUserAnimeFormDataParams struct {
+    AnimeId int
+	AnimeStatus *types.NativeUserAnimeStatus
 }
 
-func GetUserDetails(p NativeUserDetailsParams) error {
-	// - ROUTE: /api/user
-	url := fmt.Sprintf("%s/user",
+func GetUserAnimeFormData(p GetUserAnimeFormDataParams) error {
+	// - ROUTE: /api/user/anime/{animeID}/my_list_status
+	url := fmt.Sprintf("%s/user/anime/%d/my_list_status",
 		enums.ApiUrl,
+        p.AnimeId,
 	)
 
 	res, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("%v\n****ERROR GETTING USER DETAILS FROM SERVER****", err)
+		return fmt.Errorf("%v\n****ERROR GETTING USER ANIME DETAILS FROM SERVER****", err)
 	}
 
 	defer res.Body.Close()
@@ -36,10 +39,9 @@ func GetUserDetails(p NativeUserDetailsParams) error {
 		return fmt.Errorf("%s", jsonData)
 	}
 
-	if err := json.NewDecoder(res.Body).Decode(p.UserDetails); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(p.AnimeStatus); err != nil {
 		return fmt.Errorf("Json parsing error of anime-list \n %v", err)
 	}
-
 
 	return nil
 

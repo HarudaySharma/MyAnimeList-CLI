@@ -1,16 +1,14 @@
 package ui
 
 import (
-	// "bytes"
-	// "encoding/base64"
 	"fmt"
-	// "image/jpeg"
 	"slices"
 	"strconv"
 	"strings"
 
 	e "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/enums"
 	c "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/ui/components"
+	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	u "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
@@ -28,7 +26,7 @@ func (ui *AnimeDetailsUI) CreateTitle() *tview.TextView {
 	alternativeTitles := strings.Builder{}
 	alternativeTitles.WriteString("ENG:  ")
 	if len(ui.Details.AlternativeTitles.EN) == 0 {
-        alternativeTitles.WriteString(fmt.Sprintln(ui.Details.Title))
+		alternativeTitles.WriteString(fmt.Sprintln(ui.Details.Title))
 	} else {
 		alternativeTitles.WriteString(fmt.Sprintln(ui.Details.AlternativeTitles.EN))
 	}
@@ -541,6 +539,190 @@ func (ui *AnimeDetailsUI) CreateLayout() *tview.Flex {
 	//layout.SetBorder(true).SetTitle("Anime Details")
 
 	return layout
+}
+func (ui *AnimeDetailsUI) UserAnimeStatusForm(app *tview.Application) *tview.Form {
+
+	// fetch the anime data from the server
+	animeStatus := types.NativeUserAnimeStatus{}
+	utils.GetUserAnimeFormData(utils.GetUserAnimeFormDataParams{
+		AnimeId:     ui.Details.ID,
+		AnimeStatus: &animeStatus,
+	})
+
+	// computing the default values
+	var statusOptions []string
+	optionIdx := 0
+	defaultStatus := 0
+
+	for _, status := range enums.UserAnimeListStatuses() {
+		if status == enums.ULS_ALL {
+			continue
+		}
+
+		if status == animeStatus.Status {
+			defaultStatus = optionIdx
+		}
+
+		// populating the dropdown status options array
+		str := strings.ReplaceAll(string(status), "_", " ")
+		str = strings.Title(str)
+		statusOptions = append(statusOptions, str)
+
+		optionIdx++
+	}
+
+	defaultScore := strconv.FormatInt(int64(animeStatus.Score), 10)
+	defaultEpisodesWatched := strconv.FormatInt(int64(animeStatus.NumWatchedEpisodes), 10)
+	lastUpdatedAt := animeStatus.UpdatedAt
+
+	// Variables to capture the form data
+	var selectedStatus string
+	var score int
+	var episodesWatched int
+
+	// Text view to display messages
+	messageView := tview.NewTextView().
+		SetTextColor(tcell.ColorGreen).
+		SetDynamicColors(true).
+		SetText("")
+
+	updatedAtView := tview.NewTextView().
+		SetDynamicColors(true).
+		SetText(lastUpdatedAt.Local().String()).SetLabel("Updated At")
+
+	var form *tview.Form
+	form = tview.NewForm().
+		AddDropDown(
+			"Status",
+			statusOptions,
+			defaultStatus,
+			func(option string, index int) {
+				selectedStatus = option // Capture the selected status
+			},
+		).
+		AddInputField(
+			fmt.Sprintf("Score (0-%d)", 10),
+			defaultScore,
+			20,
+			func(textToCheck string, lastChar rune) bool {
+				// Allow only numeric input
+				score, err := strconv.Atoi(textToCheck)
+
+				// bound checks
+				if err != nil || score > 10 || score < 0 {
+					return false
+				}
+
+				return true
+			},
+			func(text string) {
+				parsedScore, err := strconv.Atoi(text)
+				if err == nil {
+					score = parsedScore // Capture the numeric score
+				}
+			},
+		).
+		AddInputField(
+			fmt.Sprintf("Episodes Watched (0-%d)", ui.Details.NumEpisodes),
+			defaultEpisodesWatched,
+			20,
+			func(textToCheck string, lastChar rune) bool {
+				// Allow only numeric input
+				ew, err := strconv.Atoi(textToCheck)
+
+				// bound checks
+				if err != nil || ew > ui.Details.NumEpisodes || ew < 0 {
+					return false
+				}
+
+				return true
+			},
+			func(text string) {
+				parsedEpisodes, err := strconv.Atoi(text)
+				if err == nil {
+					episodesWatched = parsedEpisodes // Capture the numeric episodes watched
+				}
+			},
+		).
+		AddButton("Save", func() {
+			messageView.SetText("[gray]Updating...")
+
+			// check if the status is updated
+			if selectedStatus == string(animeStatus.Status) {
+				selectedStatus = ""
+			} else {
+				selectedStatus = strings.ReplaceAll(selectedStatus, " ", "_")
+				selectedStatus = strings.ToLower(selectedStatus)
+			}
+			// check if score is updated
+			if score == int(animeStatus.Score) {
+				score = -1
+			}
+			// check if NumWatchedEpisodes is updated
+			if episodesWatched == int(animeStatus.NumWatchedEpisodes) {
+				episodesWatched = -1
+			}
+
+			tmpAnimeStatus := &types.NativeUserAnimeStatus{
+				Status:             enums.UserAnimeListStatus(selectedStatus),
+				Score:              int8(score),
+				NumWatchedEpisodes: int16(episodesWatched),
+				IsRewatching:       animeStatus.IsRewatching,
+				UpdatedAt:          animeStatus.UpdatedAt,
+			}
+			err := utils.UpdateUserAnimeStatus(u.UpdateUserAnimeStatusParams{
+				AnimeId:     ui.Details.ID,
+				AnimeStatus: tmpAnimeStatus,
+			})
+
+			if err != nil {
+				messageView.SetText(fmt.Sprintf("[red]Error: %s", err.Error()))
+			} else {
+				messageView.SetText("[green]Update Successfull!")
+
+				animeStatus = *tmpAnimeStatus
+				updatedAtView.SetText(tmpAnimeStatus.UpdatedAt.Local().String())
+			}
+		}).
+		AddButton("Delete", func() {
+			messageView.SetText("[red]Are you sure you want to delete this item ?")
+
+			form.AddButton("yes", func() {
+				err := utils.DeleteUserAnimeStatus(u.DeleteUserAnimeStatusParams{
+					AnimeId: ui.Details.ID,
+				})
+
+				if err != nil {
+					messageView.SetText(fmt.Sprintf("[red]Error: %s", err.Error()))
+				} else {
+					messageView.SetText("[green] item deleted successfully")
+				}
+
+				form.RemoveButton(form.GetButtonIndex("yes"))
+				form.RemoveButton(form.GetButtonIndex("no"))
+				form.RemoveButton(form.GetButtonIndex("Delete"))
+				form.RemoveButton(form.GetButtonIndex("Save"))
+				app.SetFocus(form)
+				form.SetFocus(form.GetFormItemIndex("Status"))
+			})
+
+			form.AddButton("no", func() {
+				form.RemoveButton(form.GetButtonIndex("yes"))
+				form.RemoveButton(form.GetButtonIndex("no"))
+				app.SetFocus(form)
+				form.SetFocus(form.GetFormItemIndex("Delete"))
+			})
+		}).
+		AddButton("Quit", func() {
+			// invoke key event on key "f" of app input caputres
+			app.QueueEvent(tcell.NewEventKey(tcell.KeyRune, 'f', tcell.ModNone))
+		})
+
+	form.AddFormItem(updatedAtView)
+	form.AddFormItem(messageView)
+	form.SetBorder(true).SetTitle("Form").SetTitleAlign(tview.AlignCenter)
+
+	return form
 }
 
 /* TODO: Pending Constructors

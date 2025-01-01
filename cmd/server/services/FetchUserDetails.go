@@ -19,7 +19,7 @@ func FetchUserDetails() *t.NativeUserDetails {
 		"anime_statistics",
 	)
 	log.Println(url)
-	req := u.CreateUserHttpRequest("GET", url)
+	req := u.CreateUserHttpRequest("GET", url, nil)
 
 	res, err := client.Do(req)
 	if err != nil {
