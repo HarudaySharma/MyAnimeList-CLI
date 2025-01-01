@@ -10,7 +10,6 @@ import (
 	u "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
-	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
 
@@ -104,8 +103,8 @@ var rankingCmd = &cobra.Command{
 				DetailFields: &detailFields,
 			}
 
-			app := tview.NewApplication()
-			if err := app.SetRoot(animeDetailsUI.CreateLayout(), true).EnableMouse(true).Run(); err != nil {
+			app := ui.NewApplication(&animeDetailsUI)
+			if err := app.Run(); err != nil {
 				panic(err)
 			}
 		}

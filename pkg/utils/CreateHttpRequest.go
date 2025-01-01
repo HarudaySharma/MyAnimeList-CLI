@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"io"
 	"log"
 	"net/http"
 
@@ -21,8 +22,8 @@ func CreatePublicHttpRequest(method, url string) *http.Request {
 	return req
 }
 
-func CreateUserHttpRequest(method, url string) *http.Request {
-	req, err := http.NewRequest(method, url, nil)
+func CreateUserHttpRequest(method, url string, body io.Reader) *http.Request {
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		log.Fatalf("ERROR creating new request \n %v", err)
 		return nil

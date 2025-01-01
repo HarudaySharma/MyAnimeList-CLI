@@ -12,6 +12,7 @@ import (
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	srv "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/services"
 	pkgE "github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
+	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 	pkgUtl "github.com/HarudaySharma/MyAnimeList-CLI/pkg/utils"
 )
@@ -152,7 +153,6 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	log.Println("here2")
 	// sort option
 	sortOptions := strings.ReplaceAll(q.Get("sort"), " ", "")
 	sortOptionArr := strings.Split(sortOptions, ",")
@@ -242,5 +242,127 @@ func GETUserAnimeList(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, string(jsonData))
 }
 
-// PUT https://api.myanimelist.net/v2/anime/{anime_id}/my_list_statusc
+// Expected path: /api/user/anime/{animeid}/my_list_status
+func GETUserAnimeStatus(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	segments := strings.Split(strings.Trim(path, "/"), "/")
+	var animeID string
+
+	// Check if the path matches the expected pattern
+	if len(segments) == 5 && segments[0] == "api" && segments[1] == "user" && segments[2] == "anime" && segments[4] == "my_list_status" {
+		animeID = segments[3] // Extract the animeid
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	log.Println("*****GETUserAnimeStatus Handler called*****")
+
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprint(w, "{\"error\": \"Only GET request is allowed\"}")
+		return
+	}
+
+	data := srv.FetchUserAnimeStatus(srv.FetchUserAnimeStatusParams{
+		AnimeID: animeID,
+	})
+
+	jsonData, err := json.Marshal(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "{\"error\": \"JSON parsing failed\"}")
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	fmt.Fprint(w, string(jsonData))
+
+	return
+}
+
+// Expected path: /api/user/anime/{animeid}/my_list_status
+func PATCHUserAnimeStatus(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	segments := strings.Split(strings.Trim(path, "/"), "/")
+	var animeID string
+
+	// Check if the path matches the expected pattern
+	if len(segments) == 5 && segments[0] == "api" && segments[1] == "user" && segments[2] == "anime" && segments[4] == "my_list_status" {
+		animeID = segments[3] // Extract the animeid
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	log.Println("*****PATCHUserAnimeStatus Handler called*****")
+
+	if r.Method != http.MethodPatch {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	animeStatus := &types.NativeUserAnimeStatus{}
+	if err := json.NewDecoder(r.Body).Decode(animeStatus); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	defer r.Body.Close()
+
+	data := srv.UpdateUserAnimeStatus(srv.UpdateUserAnimeStatusParams{
+		AnimeID:     animeID,
+		AnimeStatus: animeStatus,
+	})
+
+	jsonData, err := json.Marshal(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "{\"error\": \"JSON parsing failed\"}")
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	fmt.Fprint(w, string(jsonData))
+
+	return
+}
+
 // DELETE https://api.myanimelist.net/v2/anime/{anime_id}/my_list_status
+
+// Expected path: /api/user/anime/{animeid}/my_list_status
+func DELETEUserAnimeStatus(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	segments := strings.Split(strings.Trim(path, "/"), "/")
+	var animeID string
+    log.Println("here")
+
+	// Check if the path matches the expected pattern
+	if len(segments) == 5 && segments[0] == "api" && segments[1] == "user" && segments[2] == "anime" && segments[4] == "my_list_status" {
+		animeID = segments[3] // Extract the animeid
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	log.Println("*****DELETEUserAnimeStatus Handler called*****")
+
+	if r.Method != http.MethodDelete {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := srv.DeleteUserAnimeStatus(srv.DeleteUserAnimeStatusParams{
+		AnimeID: animeID,
+	})
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "{\"error\": \"%s\"}", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	return
+}
