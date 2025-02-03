@@ -11,13 +11,12 @@ import (
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	pkgE "github.com/HarudaySharma/MyAnimeList-CLI/pkg/enums"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
-	"github.com/rivo/tview"
 	"github.com/spf13/cobra"
 )
 
 var WatchingCmd = &cobra.Command{
 	Use:   "watching",
-	Short: "lists all the user's anime",
+	Short: `lists user's "watching" list of anime`,
 	Run: func(cmd *cobra.Command, args []string) {
 		listType := pkgE.ULS_Watching
 
@@ -107,8 +106,8 @@ var WatchingCmd = &cobra.Command{
 				DetailFields: &detailFields,
 			}
 
-			app := tview.NewApplication()
-			if err := app.SetRoot(animeDetailsUI.CreateLayout(), true).EnableMouse(true).Run(); err != nil {
+			app := ui.NewApplication(&animeDetailsUI)
+			if err := app.Run(); err != nil {
 				panic(err)
 			}
 		}

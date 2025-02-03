@@ -53,9 +53,9 @@ func FetchUserAnimeList(p FetchUserAnimeListParams) *t.NativeUserAnimeList {
 		p.Offset,
 		fieldsStr,
 	)
-    log.Println(url)
+	log.Println(url)
 
-	req := u.CreateUserHttpRequest("GET", url)
+	req := u.CreateUserHttpRequest("GET", url, nil)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -79,8 +79,16 @@ func convertToNativeUserAnimeListType(data *t.MALUserAnimeList) *t.NativeUserAni
 	convertedData := t.NativeUserAnimeList{}
 
 	for _, v := range data.Data {
+		animeStatus := t.NativeUserAnimeStatus{
+			Status:             v.AnimeStatus.Status,
+			Score:              v.AnimeStatus.Score,
+			NumWatchedEpisodes: v.AnimeStatus.NumEpisodesWatched,
+			IsRewatching:       v.AnimeStatus.IsRewatching,
+			UpdatedAt:          v.AnimeStatus.UpdatedAt,
+		}
+
 		node := t.UserAnimeListDataNode{
-			ListStatus: v.ListStatus,
+			AnimeStatus: animeStatus,
 			Node: t.AnimeListDataNode{
 				ID:           v.Node.ID,
 				Title:        v.Node.Title,

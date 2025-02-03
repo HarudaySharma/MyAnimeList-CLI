@@ -40,7 +40,6 @@ func GetUserDetails(p NativeUserDetailsParams) error {
 		return fmt.Errorf("Json parsing error of anime-list \n %v", err)
 	}
 
-	defer res.Body.Close()
 
 	return nil
 

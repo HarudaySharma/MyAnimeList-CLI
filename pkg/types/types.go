@@ -349,27 +349,40 @@ type NativeUserDetails struct {
 
 type MALUserAnimeList struct {
 	Data []struct {
-		Node       MALDataNode `json:"node"`
-		ListStatus UserListStatus    `json:"list_status"`
+		Node        MALDataNode        `json:"node"`
+		AnimeStatus MALUserAnimeStatus `json:"list_status"`
 	} `json:"data"`
 
-    Paging Page `json:"paging"`
+	Paging Page `json:"paging"`
 }
 
-type UserListStatus struct {
+type MALUserAnimeStatus struct {
+	Status               enums.UserAnimeListStatus `json:"status"`
+	Score                int8                      `json:"score"` // 0-10
+	NumEpisodesWatched   int16                     `json:"num_episodes_watched"`// NOTE: in docs the json field is "num_watched_episodes" which is wrong
+	IsRewatching         bool                      `json:"is_rewatching"`
+	UpdatedAt            time.Time                 `json:"updated_at"`
+	Priority             int                       `json:"priority"` // 0-2
+	NumberTimesRewatched int                       `json:"num_times_rewatched"`
+	RewatchValue         int                       `json:"rewatch_value"` // 0-5
+	Tags                 []string                  `json:"tags"`
+	Comments             string                    `json:"comments"`
+}
+
+type NativeUserAnimeStatus struct {
 	Status             enums.UserAnimeListStatus `json:"status"`
-	Score              int16                     `json:"score"`
-	NumWatchedEpisodes int16                     `json:"num_watched_episodes"`
+	Score              int8                      `json:"score"` // 0-10
+    NumWatchedEpisodes int16                     `json:"num_watched_episodes"` // NOTE: not named identical to the source json field as when updating the status they require you to send a "num_watched_episodes" field instead of "num_episodes_watched"
 	IsRewatching       bool                      `json:"is_rewatching"`
 	UpdatedAt          time.Time                 `json:"updated_at"`
 }
 
 type UserAnimeListDataNode struct {
-    Node       AnimeListDataNode `json:"node"`
-    ListStatus UserListStatus    `json:"list_status"`
+	Node        AnimeListDataNode     `json:"node"`
+	AnimeStatus NativeUserAnimeStatus `json:"list_status"`
 }
 
 type NativeUserAnimeList struct {
-    Data []UserAnimeListDataNode `json:"data"`
-    Paging Page `json:"paging"`
+	Data   []UserAnimeListDataNode `json:"data"`
+	Paging Page                    `json:"paging"`
 }

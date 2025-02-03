@@ -174,7 +174,7 @@ func SaveUserAnimePreviewData(key string, node types.UserAnimeListDataNode) erro
 	dataFilePath := dataDir + "/" + dataFileName
 
 	dataScript := GenerateAnimeDataPreviewScript(node.Node)
-	dataScript += GenerateUserListStatusScript(node.ListStatus)
+	dataScript += GenerateUserListStatusScript(node.AnimeStatus)
 	if checkFileExists(dataFilePath) {
 		return nil
 	}
@@ -517,8 +517,8 @@ func GenerateAnimeDataPreviewScript(node types.AnimeListDataNode) string {
 	return script
 }
 
-func GenerateUserListStatusScript(userListStatus types.UserListStatus) string {
-	if userListStatus == (types.UserListStatus{}) {
+func GenerateUserListStatusScript(userListStatus types.NativeUserAnimeStatus) string {
+	if userListStatus == (types.NativeUserAnimeStatus{}) {
 		return ""
 	}
 

@@ -12,12 +12,12 @@ func StartServer(port string) {
 
 	// create request routez
 
-	http.HandleFunc("/api/anime-list", handlers.GETAnimeList)
+	http.HandleFunc("GET /api/anime-list", handlers.GETAnimeList)
     // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
-    http.HandleFunc("/api/anime/", handlers.GETAnimeDetails)
-    http.HandleFunc("/api/anime/ranking", handlers.GETAnimeRanking)
+    http.HandleFunc("GET /api/anime/", handlers.GETAnimeDetails)
+    http.HandleFunc("GET /api/anime/ranking", handlers.GETAnimeRanking)
     // NOTE: don't remove the "/" at the end of endpoint (for dynamic routing)
-    http.HandleFunc("/api/anime/seasonal/", handlers.GETSeasonalAnime)
+    http.HandleFunc("GET /api/anime/seasonal/", handlers.GETSeasonalAnime)
 
 
     // user specific routes
@@ -25,6 +25,11 @@ func StartServer(port string) {
 	http.HandleFunc("GET /api/auth", handlers.AuthCallback)
 	http.HandleFunc("GET /api/user", handlers.GETUserDetails)
 	http.HandleFunc("GET /api/user/anime-list", handlers.GETUserAnimeList)
+
+    // Expected path: /api/user/anime/{animeid}/my_list_status
+    http.HandleFunc("GET /api/user/anime/", handlers.GETUserAnimeStatus)
+    http.HandleFunc("PATCH /api/user/anime/", handlers.PATCHUserAnimeStatus)
+    http.HandleFunc("DELETE /api/user/anime/", handlers.DELETEUserAnimeStatus)
 
 	// SERVER
 	s := http.Server{
