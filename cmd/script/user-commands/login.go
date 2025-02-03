@@ -8,12 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const mal_auth_url = "https://myanimelist.net/v1/oauth2/authorize"
-
-var loginCmd = &cobra.Command{
+var LoginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "ask's user to give permission to access their mal data",
 	Run: func(cmd *cobra.Command, args []string) {
+		const mal_auth_url = "https://myanimelist.net/v1/oauth2/authorize"
 
 		url := fmt.Sprintf("%s?response_type=code&client_id=%s&code_challenge=%s&state=Request123&code_challenge_method=plain",
 			mal_auth_url,

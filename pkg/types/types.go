@@ -358,8 +358,8 @@ type MALUserAnimeList struct {
 
 type MALUserAnimeStatus struct {
 	Status               enums.UserAnimeListStatus `json:"status"`
-	Score                int8                     `json:"score"` // 0-10
-	NumWatchedEpisodes   int16                     `json:"num_watched_episodes"`
+	Score                int8                      `json:"score"` // 0-10
+	NumEpisodesWatched   int16                     `json:"num_episodes_watched"`// NOTE: in docs the json field is "num_watched_episodes" which is wrong
 	IsRewatching         bool                      `json:"is_rewatching"`
 	UpdatedAt            time.Time                 `json:"updated_at"`
 	Priority             int                       `json:"priority"` // 0-2
@@ -371,14 +371,14 @@ type MALUserAnimeStatus struct {
 
 type NativeUserAnimeStatus struct {
 	Status             enums.UserAnimeListStatus `json:"status"`
-	Score              int8                     `json:"score"` // 0-10
-	NumWatchedEpisodes int16                     `json:"num_watched_episodes"`
+	Score              int8                      `json:"score"` // 0-10
+    NumWatchedEpisodes int16                     `json:"num_watched_episodes"` // NOTE: not named identical to the source json field as when updating the status they require you to send a "num_watched_episodes" field instead of "num_episodes_watched"
 	IsRewatching       bool                      `json:"is_rewatching"`
 	UpdatedAt          time.Time                 `json:"updated_at"`
 }
 
 type UserAnimeListDataNode struct {
-	Node       AnimeListDataNode     `json:"node"`
+	Node        AnimeListDataNode     `json:"node"`
 	AnimeStatus NativeUserAnimeStatus `json:"list_status"`
 }
 

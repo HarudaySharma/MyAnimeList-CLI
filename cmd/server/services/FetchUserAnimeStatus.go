@@ -19,7 +19,7 @@ func FetchUserAnimeStatus(p FetchUserAnimeStatusParams) *t.NativeUserAnimeStatus
 	// create a client
 	client := http.Client{}
 
-    // PATCH https://api.myanimelist.net/v2/anime/{anime_id}/my_list_status
+	// PATCH https://api.myanimelist.net/v2/anime/{anime_id}/my_list_status
 	url := fmt.Sprintf(`%s/anime/%s/my_list_status`,
 		config.C.MalApiUrl,
 		p.AnimeID,
@@ -50,7 +50,7 @@ func convertToNativeUserAnimeStatusType(data *t.MALUserAnimeStatus) *t.NativeUse
 	convertedData := t.NativeUserAnimeStatus{
 		Status:             data.Status,
 		Score:              data.Score,
-		NumWatchedEpisodes: data.NumWatchedEpisodes,
+		NumWatchedEpisodes: data.NumEpisodesWatched,
 		IsRewatching:       data.IsRewatching,
 		UpdatedAt:          data.UpdatedAt,
 	}

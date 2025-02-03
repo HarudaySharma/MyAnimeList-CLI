@@ -15,8 +15,8 @@ import (
 )
 
 var PlanToWatchCmd = &cobra.Command{
-	Use:   "watching",
-	Short: "lists all the user's anime",
+	Use:   "plan_to_watch",
+	Short: `lists user's "plan to watch" list of anime`,
 	Run: func(cmd *cobra.Command, args []string) {
 		listType := pkgE.ULS_PlanToWatch
 

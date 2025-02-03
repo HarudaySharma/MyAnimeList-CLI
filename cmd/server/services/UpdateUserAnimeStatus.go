@@ -42,6 +42,7 @@ func UpdateUserAnimeStatus(p UpdateUserAnimeStatusParams) *t.NativeUserAnimeStat
         formData.Set("num_watched_episodes", fmt.Sprintf("%d",p.AnimeStatus.NumWatchedEpisodes))
     }
 
+    log.Println(formData)
 	req := u.CreateUserHttpRequest(http.MethodPatch, url, bytes.NewReader([]byte(formData.Encode())))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 

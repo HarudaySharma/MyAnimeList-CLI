@@ -15,8 +15,8 @@ import (
 )
 
 var OnHoldCmd = &cobra.Command{
-	Use:   "watching",
-	Short: "lists all the user's anime",
+	Use:   "on_hold",
+	Short: `lists user's "on hold" list of anime`,
 	Run: func(cmd *cobra.Command, args []string) {
 		listType := pkgE.ULS_OnHold
 

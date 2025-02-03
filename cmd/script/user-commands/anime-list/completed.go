@@ -15,8 +15,8 @@ import (
 )
 
 var CompletedCmd = &cobra.Command{
-	Use:   "watching",
-	Short: "lists all the user's anime",
+	Use:   "completed",
+	Short: `lists user's "completed" list of anime`,
 	Run: func(cmd *cobra.Command, args []string) {
 		listType := pkgE.ULS_Completed
 

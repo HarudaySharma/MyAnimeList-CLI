@@ -84,7 +84,7 @@ func init() {
 		sortOptionsStr.String(),
 	)))
 
-	MeCmd.AddCommand(loginCmd)
+	MeCmd.AddCommand(LoginCmd)
 	MeCmd.AddCommand(animelist.AllCmd)
 	MeCmd.AddCommand(animelist.WatchingCmd)
 	MeCmd.AddCommand(animelist.PlanToWatchCmd)

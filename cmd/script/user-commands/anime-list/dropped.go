@@ -15,8 +15,8 @@ import (
 )
 
 var DroppedCmd = &cobra.Command{
-	Use:   "watching",
-	Short: "lists all the user's anime",
+	Use:   "dropped",
+	Short: `lists user's "dropped" list of anime`,
 	Run: func(cmd *cobra.Command, args []string) {
 		listType := pkgE.ULS_Dropped
 

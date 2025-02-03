@@ -82,7 +82,7 @@ func convertToNativeUserAnimeListType(data *t.MALUserAnimeList) *t.NativeUserAni
 		animeStatus := t.NativeUserAnimeStatus{
 			Status:             v.AnimeStatus.Status,
 			Score:              v.AnimeStatus.Score,
-			NumWatchedEpisodes: v.AnimeStatus.NumWatchedEpisodes,
+			NumWatchedEpisodes: v.AnimeStatus.NumEpisodesWatched,
 			IsRewatching:       v.AnimeStatus.IsRewatching,
 			UpdatedAt:          v.AnimeStatus.UpdatedAt,
 		}
