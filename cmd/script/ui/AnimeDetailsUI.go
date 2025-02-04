@@ -577,8 +577,8 @@ func (ui *AnimeDetailsUI) UserAnimeStatusForm(app *tview.Application) *tview.For
 
 	// Variables to capture the form data
 	var selectedStatus string
-	var score int
-	var episodesWatched int
+	var score int = -1
+	var episodesWatched int = -1
 
 	// Text view to display messages
 	messageView := tview.NewTextView().
@@ -648,20 +648,21 @@ func (ui *AnimeDetailsUI) UserAnimeStatusForm(app *tview.Application) *tview.For
 			messageView.SetText("[gray]Updating...")
 
 			// check if the status is updated
-			if selectedStatus == string(animeStatus.Status) {
-				selectedStatus = ""
+			if selectedStatus == "" {
+				selectedStatus = string(animeStatus.Status)
 			} else {
 				selectedStatus = strings.ReplaceAll(selectedStatus, " ", "_")
 				selectedStatus = strings.ToLower(selectedStatus)
 			}
+
 			// check if score is updated
-			if score == int(animeStatus.Score) {
-				score = -1
+			if score == -1 { // if not updated
+				score = int(animeStatus.Score)
 			}
 			// check if NumWatchedEpisodes is updated
-			if episodesWatched == int(animeStatus.NumWatchedEpisodes) {
-				episodesWatched = -1
-			}
+            if episodesWatched == -1 { // if not updated
+                episodesWatched = int(animeStatus.NumWatchedEpisodes)
+            }
 
 			tmpAnimeStatus := &types.NativeUserAnimeStatus{
 				Status:             enums.UserAnimeListStatus(selectedStatus),
@@ -670,6 +671,7 @@ func (ui *AnimeDetailsUI) UserAnimeStatusForm(app *tview.Application) *tview.For
 				IsRewatching:       animeStatus.IsRewatching,
 				UpdatedAt:          animeStatus.UpdatedAt,
 			}
+
 			err := utils.UpdateUserAnimeStatus(u.UpdateUserAnimeStatusParams{
 				AnimeId:     ui.Details.ID,
 				AnimeStatus: tmpAnimeStatus,

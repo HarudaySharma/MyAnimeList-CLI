@@ -1,6 +1,5 @@
-bin/
-bin/*
 .env
 internal/shared/embedFiles/*
 !internal/shared/embedFiles/embed.go
+cmp
 

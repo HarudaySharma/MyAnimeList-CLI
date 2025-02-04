@@ -171,28 +171,50 @@ func SaveUserAnimePreviewData(key string, node types.UserAnimeListDataNode) erro
 
 	dataFileName := strings.ReplaceAll(key, " ", "")
 	dataFileName = strings.ReplaceAll(dataFileName, "\t", "")
-	dataFilePath := dataDir + "/" + dataFileName
 
-	dataScript := GenerateAnimeDataPreviewScript(node.Node)
-	dataScript += GenerateUserListStatusScript(node.AnimeStatus)
-	if checkFileExists(dataFilePath) {
-		return nil
+    animeDataFilePath := dataDir + "/" + dataFileName // NOTE:
+	if !checkFileExists(animeDataFilePath) {
+		// creating animeData files
+
+		animeDataScript := GenerateAnimeDataPreviewScript(node.Node)
+		/* dataScript := GenerateAnimeDataPreviewScript(node.Node)
+		dataScript += GenerateUserListStatusScript(node.AnimeStatus) */
+
+		dir := animeDataFilePath[:len(animeDataFilePath)-len("/"+animeDataFilePath[strings.LastIndex(animeDataFilePath, "/")+1:])]
+
+		err := os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("failed to create directories: %v", err)
+		}
+
+		out, err := os.Create(animeDataFilePath)
+		if err != nil {
+			return err
+		}
+
+		defer out.Close()
+		_, err = out.Write([]byte(animeDataScript))
+
 	}
 
-	dir := dataFilePath[:len(dataFilePath)-len("/"+dataFilePath[strings.LastIndex(dataFilePath, "/")+1:])]
+	// creating userAnimeData files everytime as this data is prone to change actively
+
+    userAnimeDataFilePath := dataDir + "/user/" + dataFileName // NOTE:
+	userAnimeDataScript := GenerateUserListStatusScript(node.AnimeStatus)
+	dir := userAnimeDataFilePath[:len(userAnimeDataFilePath)-len("/"+userAnimeDataFilePath[strings.LastIndex(userAnimeDataFilePath, "/")+1:])]
 
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("failed to create directories: %v", err)
 	}
 
-	out, err := os.Create(dataFilePath)
+	out, err := os.Create(userAnimeDataFilePath)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
 
-	_, err = out.Write([]byte(dataScript))
+	defer out.Close()
+	_, err = out.Write([]byte(userAnimeDataScript))
 
 	return err
 }
@@ -597,6 +619,8 @@ func GenerateUserPreviewScript() string {
 }
 
 func GenerateAnimePreviewScript() string {
+    userAnimeDataDir := dataDir + "/user"
+
 	previewScript := fmt.Sprintf(`
             title=$(echo {} | tr -d '[:space:]')
             show_image_previews="%s"
@@ -611,10 +635,18 @@ func GenerateAnimePreviewScript() string {
                     echo Loading Image...
                 fi
             fi
+
+            #animeData
             if [ -s "%s/${title}" ]; then
                 source "%s/${title}"
             else
                 echo Loading Data...
+            fi
+            #userAnimeData
+            if [ -s "%s/${title}" ]; then
+                source "%s/${title}"
+            else
+                echo No User Data...
             fi
     `,
 		"true",
@@ -622,6 +654,7 @@ func GenerateAnimePreviewScript() string {
 		imageDir, imageDir,
 		imageDir, imageDir,
 		dataDir, dataDir,
+        userAnimeDataDir, userAnimeDataDir,
 	)
 
 	return previewScript

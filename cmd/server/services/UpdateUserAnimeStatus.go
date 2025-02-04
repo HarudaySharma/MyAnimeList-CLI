@@ -30,19 +30,19 @@ func UpdateUserAnimeStatus(p UpdateUserAnimeStatusParams) *t.NativeUserAnimeStat
 	)
 	log.Println(url)
 
-    // Prepare form data
+	// Prepare form data
 	formData := urlPkg.Values{}
 	if p.AnimeStatus.Status != "" {
 		formData.Set("status", string(p.AnimeStatus.Status))
 	}
-	if p.AnimeStatus.Score != -1 {
+	if p.AnimeStatus.Score >= 0 && p.AnimeStatus.Score <= 10 {
 		formData.Set("score", fmt.Sprintf("%d", p.AnimeStatus.Score))
 	}
-    if p.AnimeStatus.NumWatchedEpisodes != -1 {
-        formData.Set("num_watched_episodes", fmt.Sprintf("%d",p.AnimeStatus.NumWatchedEpisodes))
-    }
+	if p.AnimeStatus.NumWatchedEpisodes >= 0 {
+		formData.Set("num_watched_episodes", fmt.Sprintf("%d", p.AnimeStatus.NumWatchedEpisodes))
+	}
 
-    log.Println(formData)
+	log.Println(formData)
 	req := u.CreateUserHttpRequest(http.MethodPatch, url, bytes.NewReader([]byte(formData.Encode())))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 

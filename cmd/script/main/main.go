@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script"
 	"github.com/HarudaySharma/MyAnimeList-CLI/internal/shared/daemon"
@@ -22,6 +23,7 @@ func main() {
         }
 
 		daemon.StartDaemon(daemonPort)
+        time.Sleep(time.Millisecond * 100)
 	}
 
     /* if daemon.IsRunning() {

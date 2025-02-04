@@ -8,7 +8,10 @@ import (
 
 
 func StartDaemon(port int64) {
-	daemon := os.ExpandEnv("$HOME/projects/MyAnimeList-CLI/bin/main.bin")
+
+    //const daemonPath = "$HOME/projects/MyAnimeList-CLI/bin/main.bin"
+    const daemonPath = "$HOME/.local/share/mal-cli/mal-cli-daemon.bin"
+	daemon := os.ExpandEnv(daemonPath)
 	cmd := exec.Command(daemon, fmt.Sprintf("%d", port))
 
 	err := cmd.Start()
