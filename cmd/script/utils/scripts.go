@@ -645,8 +645,6 @@ func GenerateAnimePreviewScript() string {
             #userAnimeData
             if [ -s "%s/${title}" ]; then
                 source "%s/${title}"
-            else
-                echo No User Data...
             fi
     `,
 		"true",
