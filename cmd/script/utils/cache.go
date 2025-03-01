@@ -2,8 +2,10 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	embedfiles "github.com/HarudaySharma/MyAnimeList-CLI/internal/shared/embedFiles"
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 )
 
@@ -97,8 +99,17 @@ func DeleteUserAnimeStatusCache(p DeleteUserAnimeStatusCacheParams) {
 	userAnimeDataFilePath := dataDir + "/user/" + dataFileName // NOTE:
 
 	if err := DeleteFile(userAnimeDataFilePath); err != nil {
-		fmt.Println("-W: failed to remove the anime status file from cache")
+		fmt.Println("-W: failed to remove the anime status file from cache", err)
 	}
 
 	return
+}
+
+func ClearClientCache() {
+	if err := os.RemoveAll(embedfiles.ClientCacheDir); err != nil {
+		fmt.Println("-E: failed to clean cache.", err)
+        return
+	}
+
+    fmt.Println("Cache is cleared.")
 }

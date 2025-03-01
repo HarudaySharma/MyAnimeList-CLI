@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	usercommands "github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/user-commands"
+	"github.com/HarudaySharma/MyAnimeList-CLI/cmd/script/utils"
 	es "github.com/HarudaySharma/MyAnimeList-CLI/cmd/server/enums"
 	"github.com/spf13/cobra"
 )
@@ -14,6 +15,17 @@ var rootCmd = &cobra.Command{
 	Use:   "mal-cli",
 	Short: "Search about anime from terminal",
 	Long:  `Access MyAnimeList api from terminal`,
+	Run: func(cmd *cobra.Command, args []string) {
+		clearCache, err := cmd.Flags().GetBool("clear-cache")
+		if err != nil {
+			return
+		}
+
+		if clearCache {
+			utils.ClearClientCache()
+		}
+
+	},
 }
 
 func Execute() {
@@ -35,11 +47,11 @@ func init() {
 	availableOptionsStr.WriteString("\n\t\t")
 
 	everyDetailField := es.EveryDetailField()
-	for i := 0; i < len(everyDetailField); i+=2 {
+	for i := 0; i < len(everyDetailField); i += 2 {
 		availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i, everyDetailField[i]))
 		availableOptionsStr.WriteString("\t\t\t\t\t")
 		if i+1 < len(everyDetailField) {
-			availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i + 1, everyDetailField[i + 1]))
+			availableOptionsStr.WriteString(fmt.Sprintf("%d => %s", i+1, everyDetailField[i+1]))
 		}
 		availableOptionsStr.WriteString("\n\t\t")
 	}
@@ -52,5 +64,11 @@ func init() {
 		availableOptionsStr.String(),
 	)))
 
-    rootCmd.AddCommand(usercommands.MeCmd)
+	// option: --clear-cache
+	rootCmd.PersistentFlags().Bool("clear-cache", false, strings.TrimSpace(fmt.Sprintf(`
+        Clears the application cache
+        `,
+	)))
+
+	rootCmd.AddCommand(usercommands.MeCmd)
 }
