@@ -67,7 +67,7 @@ func FzfAnimeList(p FzfAnimeListParams) (int, *types.AnimeListDataNode, error) {
 	}
 
 	previewScript := GenerateAnimePreviewScript()
-	output, err := useFzf(titleList, "search results", previewScript)
+	output, err := useFzf(titleList, "Search Results", previewScript, "Overview")
 	if err != nil {
 		return 0, &types.AnimeListDataNode{}, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
@@ -108,6 +108,7 @@ func FzfUserAnimeList(p FzfUserAnimeListParams) (int, *types.UserAnimeListDataNo
 		ID  int
 		Idx int
 	}, 0)
+
 	for idx, val := range p.AnimeList.Data {
 		cacheKey, fzfKey := GenerateUserAnimePreviewKeys(&val.Node)
 
@@ -138,7 +139,7 @@ func FzfUserAnimeList(p FzfUserAnimeListParams) (int, *types.UserAnimeListDataNo
 	}
 
 	previewScript := GenerateAnimePreviewScript()
-	output, err := useFzf(titleList, "search results", previewScript)
+	output, err := useFzf(titleList, "User Anime List", previewScript, "Overview")
 	if err != nil {
 		return 0, &types.UserAnimeListDataNode{}, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
@@ -177,6 +178,7 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, *types.AnimeRankingD
 		ID  int
 		Idx int
 	}, 0)
+
 	for idx, v := range p.AnimeList.Data {
 
 		cacheKey, fzfKey := GenerateRankingAnimePreviewKeys(&v)
@@ -207,7 +209,7 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, *types.AnimeRankingD
 	}
 
 	previewScript := GenerateAnimePreviewScript()
-	output, err := useFzf(titleList, p.RankingType, previewScript)
+	output, err := useFzf(titleList, fmt.Sprintf("Type: %s", p.RankingType), previewScript, "Overview")
 	if err != nil {
 		return 0, &types.AnimeRankingDataNode{}, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
@@ -239,7 +241,7 @@ func FzfUserMenu(list []string, userD *types.NativeUserDetails) (enums.UserAnime
 
 	previewScript := GenerateUserPreviewScript()
 	// Show user the list from which they can choose
-	str, err := useFzf(list, "user info", previewScript)
+	str, err := useFzf(list, "user info", previewScript, "User Info")
 	if err != nil {
 		return "", err
 	}
@@ -252,7 +254,7 @@ func FzfUserMenu(list []string, userD *types.NativeUserDetails) (enums.UserAnime
 	return chosenListType, nil
 }
 
-func useFzf(input []string, borderLabel string, previewScript string) (string, error) {
+func useFzf(input []string, borderLabel string, previewScript string, previewLabel string) (string, error) {
 	fzf := exec.Command("fzf",
 		"--no-sort",
 		"--cycle",
@@ -263,6 +265,7 @@ func useFzf(input []string, borderLabel string, previewScript string) (string, e
 		"--preview-window=right:30%",
 		"--wrap",
 		fmt.Sprintf("--border-label=%s", borderLabel),
+		fmt.Sprintf("--preview-label=%s", previewLabel),
 		fmt.Sprintf(`--preview=
                 %s
                 %s

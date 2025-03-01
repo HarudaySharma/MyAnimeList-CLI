@@ -36,7 +36,7 @@ func fzfPreview() string {
         		# 2. The last line of the output is the ANSI reset code without newline.
         		#    This confuses fzf and makes it render scroll offset indicator.
         		#    So we remove the last line and append the reset code to its previous line.
-        		kitty icat --clear --transfer-mode=memory --unicode-placeholder --stdin=no --place="$dim@0x0" "$file" | sed '$d' | sed $'$s/$/\e[m/'
+        		kitty icat --clear --transfer-mode=stream --unicode-placeholder --stdin=no --place="$dim@0x0" "$file" | sed '$d' | sed $'$s/$/\e[m/'
 
             # 2. Use chafa with Sixel output
         	elif command -v chafa >/dev/null; then
@@ -201,6 +201,7 @@ func SaveUserAnimePreviewData(key string, node *types.UserAnimeListDataNode) err
 	// creating userAnimeData files everytime as this data is prone to change actively
 
 	userAnimeDataFilePath := dataDir + "/user/" + dataFileName // NOTE:
+
 	userAnimeDataScript := GenerateUserListStatusScript(node.AnimeStatus)
 
 	dir := userAnimeDataFilePath[:len(userAnimeDataFilePath)-len("/"+userAnimeDataFilePath[strings.LastIndex(userAnimeDataFilePath, "/")+1:])]
