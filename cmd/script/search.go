@@ -36,6 +36,7 @@ var searchCmd = &cobra.Command{
 		}
 
 		var animeList types.NativeAnimeList
+		var listNode *types.AnimeListDataNode
 		var animeId int = -1 // will send a request to server every time it is "-1"
 
 		detailFields := make([]es.AnimeDetailField, 0)
@@ -70,7 +71,8 @@ var searchCmd = &cobra.Command{
 					}
 				}
 
-				animeId, err = u.FzfAnimeList(u.FzfAnimeListParams{
+				// showing the anime list using fzf
+				animeId, listNode, err = u.FzfAnimeList(u.FzfAnimeListParams{
 					AnimeList: &animeList,
 					Limit:     limit,
 					Offset:    &offset,
@@ -110,6 +112,7 @@ var searchCmd = &cobra.Command{
 			animeDetailsUI := ui.AnimeDetailsUI{
 				Details:      &animeDetails,
 				DetailFields: &detailFields,
+				ListNode:     listNode,
 			}
 
 			app := ui.NewApplication(&animeDetailsUI)

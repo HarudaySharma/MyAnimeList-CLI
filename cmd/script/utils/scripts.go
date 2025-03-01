@@ -102,7 +102,7 @@ func SaveUserPreviewData(userD *types.NativeUserDetails) error {
 	return err
 }
 
-func SaveAnimePreviewData(key string, node types.AnimeListDataNode) error {
+func SaveAnimePreviewData(key string, node *types.AnimeListDataNode) error {
 	// NOTE: all the saving are being done according to the preview script written
 
 	mainPicture := node.CustomFields["main_picture"]
@@ -126,10 +126,11 @@ func SaveAnimePreviewData(key string, node types.AnimeListDataNode) error {
 	dataFileName = strings.ReplaceAll(dataFileName, "\t", "")
 	dataFilePath := dataDir + "/" + dataFileName
 
-	dataScript := GenerateAnimeDataPreviewScript(node)
 	if checkFileExists(dataFilePath) {
 		return nil
 	}
+
+	dataScript := GenerateAnimeDataPreviewScript(node)
 
 	dir := dataFilePath[:len(dataFilePath)-len("/"+dataFilePath[strings.LastIndex(dataFilePath, "/")+1:])]
 
@@ -149,7 +150,7 @@ func SaveAnimePreviewData(key string, node types.AnimeListDataNode) error {
 	return err
 }
 
-func SaveUserAnimePreviewData(key string, node types.UserAnimeListDataNode) error {
+func SaveUserAnimePreviewData(key string, node *types.UserAnimeListDataNode) error {
 	// NOTE: all the saving are being done according to the preview script written
 
 	mainPicture := node.Node.CustomFields["main_picture"]
@@ -172,11 +173,11 @@ func SaveUserAnimePreviewData(key string, node types.UserAnimeListDataNode) erro
 	dataFileName := strings.ReplaceAll(key, " ", "")
 	dataFileName = strings.ReplaceAll(dataFileName, "\t", "")
 
-    animeDataFilePath := dataDir + "/" + dataFileName // NOTE:
+	animeDataFilePath := dataDir + "/" + dataFileName // NOTE:
 	if !checkFileExists(animeDataFilePath) {
 		// creating animeData files
 
-		animeDataScript := GenerateAnimeDataPreviewScript(node.Node)
+		animeDataScript := GenerateAnimeDataPreviewScript(&node.Node)
 		/* dataScript := GenerateAnimeDataPreviewScript(node.Node)
 		dataScript += GenerateUserListStatusScript(node.AnimeStatus) */
 
@@ -199,8 +200,9 @@ func SaveUserAnimePreviewData(key string, node types.UserAnimeListDataNode) erro
 
 	// creating userAnimeData files everytime as this data is prone to change actively
 
-    userAnimeDataFilePath := dataDir + "/user/" + dataFileName // NOTE:
+	userAnimeDataFilePath := dataDir + "/user/" + dataFileName // NOTE:
 	userAnimeDataScript := GenerateUserListStatusScript(node.AnimeStatus)
+
 	dir := userAnimeDataFilePath[:len(userAnimeDataFilePath)-len("/"+userAnimeDataFilePath[strings.LastIndex(userAnimeDataFilePath, "/")+1:])]
 
 	err := os.MkdirAll(dir, os.ModePerm)
@@ -212,8 +214,8 @@ func SaveUserAnimePreviewData(key string, node types.UserAnimeListDataNode) erro
 	if err != nil {
 		return err
 	}
+    defer out.Close()
 
-	defer out.Close()
 	_, err = out.Write([]byte(userAnimeDataScript))
 
 	return err
@@ -363,7 +365,7 @@ func GenerateUserDataScript(userD *types.NativeUserDetails) string {
 	return script
 }
 
-func GenerateAnimeDataPreviewScript(node types.AnimeListDataNode) string {
+func GenerateAnimeDataPreviewScript(node *types.AnimeListDataNode) string {
 	titleJP := "-"
 	titleEN := "-"
 	altTitlesInter, _ := node.CustomFields[string(enums.AlternativeTitles)]
@@ -619,7 +621,7 @@ func GenerateUserPreviewScript() string {
 }
 
 func GenerateAnimePreviewScript() string {
-    userAnimeDataDir := dataDir + "/user"
+	userAnimeDataDir := dataDir + "/user"
 
 	previewScript := fmt.Sprintf(`
             title=$(echo {} | tr -d '[:space:]')
@@ -652,7 +654,7 @@ func GenerateAnimePreviewScript() string {
 		imageDir, imageDir,
 		imageDir, imageDir,
 		dataDir, dataDir,
-        userAnimeDataDir, userAnimeDataDir,
+		userAnimeDataDir, userAnimeDataDir,
 	)
 
 	return previewScript

@@ -36,6 +36,7 @@ var AllCmd = &cobra.Command{
 		}
 
 		var animeList types.NativeUserAnimeList
+		var listNode *types.UserAnimeListDataNode
 		var animeId int = -1 // will send a request to server every time it is "-1"
 
 		detailFields := make([]es.AnimeDetailField, 0)
@@ -64,7 +65,7 @@ var AllCmd = &cobra.Command{
 
 				}
 
-				animeId, err = u.FzfUserAnimeList(u.FzfUserAnimeListParams{
+				animeId, listNode, err = u.FzfUserAnimeList(u.FzfUserAnimeListParams{
 					AnimeList: &animeList,
 					Limit:     limit,
 					Offset:    &offset,
@@ -105,6 +106,7 @@ var AllCmd = &cobra.Command{
 			animeDetailsUI := ui.AnimeDetailsUI{
 				Details:      &animeDetails,
 				DetailFields: &detailFields,
+				ListNode:     listNode,
 			}
 
 			app := ui.NewApplication(&animeDetailsUI)

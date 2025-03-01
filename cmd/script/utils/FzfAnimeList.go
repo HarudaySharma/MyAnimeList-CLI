@@ -12,14 +12,14 @@ import (
 	"github.com/HarudaySharma/MyAnimeList-CLI/pkg/types"
 )
 
+var imageDir = embedfiles.PreviewImageCacheDir
+var dataDir = embedfiles.PreviewDataCacheDir
+
 type FzfAnimeListParams struct {
 	AnimeList *types.NativeAnimeList
 	Limit     int
 	Offset    *int
 }
-
-var imageDir = embedfiles.PreviewImageCacheDir
-var dataDir = embedfiles.PreviewDataCacheDir
 
 /*
 shows the anime title's list using fzf
@@ -29,36 +29,28 @@ shows the anime title's list using fzf
 	(animeId) int | -1 (if offset is changed)
 	(error) fzf error
 */
-func FzfAnimeList(p FzfAnimeListParams) (int, error) {
+func FzfAnimeList(p FzfAnimeListParams) (int, *types.AnimeListDataNode, error) {
 
 	titleList := make([]string, 0)
-	titleMap := make(map[string]int, 0)
-	for _, val := range p.AnimeList.Data {
-		plainKeyStr := strings.Builder{}
-		formattedKeyStr := strings.Builder{}
+	titleMap := make(map[string]struct {
+		ID  int
+		Idx int
+	}, 0)
 
-		// so to not mess with filepath
-		val.Title = strings.ReplaceAll(val.Title, "\\", "-")
-		val.Title = strings.ReplaceAll(val.Title, "/", "-")
+	for idx, val := range p.AnimeList.Data {
+		cacheKey, fzfKey := GenerateAnimePreviewKeys(&val)
 
-		formattedKeyStr.WriteString(val.Title)
-		plainKeyStr.WriteString(val.Title)
-
-		startSeason := val.CustomFields["start_season"]
-		if seasonData, ok := startSeason.(map[string]interface{}); ok {
-			season, _ := seasonData["season"]
-			year, _ := seasonData["year"]
-
-			formattedKeyStr.WriteString("\t")
-			plainKeyStr.WriteString(" ")
-			plainKeyStr.WriteString(fmt.Sprintf("[ %v ~ %v ]", year, season))
-			formattedKeyStr.WriteString(fmt.Sprintf("%s[ %v ~ %v ]%s", colors.Purple, year, season, colors.Reset))
+		titleMap[cacheKey] = struct {
+			ID  int
+			Idx int
+		}{
+			ID:  val.ID,
+			Idx: idx,
 		}
 
-		titleMap[plainKeyStr.String()] = val.ID
-		titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
+		titleList = append(titleList, strings.TrimSpace(fzfKey))
 
-		if err := SaveAnimePreviewData(plainKeyStr.String(), val); err != nil {
+		if err := SaveAnimePreviewData(cacheKey, &val); err != nil {
 			fmt.Println(err)
 		}
 	}
@@ -77,8 +69,10 @@ func FzfAnimeList(p FzfAnimeListParams) (int, error) {
 	previewScript := GenerateAnimePreviewScript()
 	output, err := useFzf(titleList, "search results", previewScript)
 	if err != nil {
-		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
+		return 0, &types.AnimeListDataNode{}, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
+
+	// find the output in titleList to get the index of the anime in the list so that we can use that node to get the cache key.
 
 	selectedTitle := strings.TrimSpace(string(output))
 	// Strip ANSI codes from selectedTitle to match the titleMap keys
@@ -90,14 +84,15 @@ func FzfAnimeList(p FzfAnimeListParams) (int, error) {
 	case nextListStr:
 		*(p.Offset) += p.Limit
 	default:
-		animeId, found := titleMap[cleanTitle]
+		stk, found := titleMap[cleanTitle]
 		if !found {
 			fmt.Println("Selected title not found in the map.")
 			panic("Title's shown in the fzf are not correctly mapped to their anime Id's")
 		}
-		return animeId, nil
+		return stk.ID, &p.AnimeList.Data[stk.Idx], nil
 	}
-	return -1, nil
+
+	return -1, &types.AnimeListDataNode{}, nil
 }
 
 type FzfUserAnimeListParams struct {
@@ -106,36 +101,29 @@ type FzfUserAnimeListParams struct {
 	Offset    *int
 }
 
-func FzfUserAnimeList(p FzfUserAnimeListParams) (int, error) {
+func FzfUserAnimeList(p FzfUserAnimeListParams) (int, *types.UserAnimeListDataNode, error) {
 
 	titleList := make([]string, 0)
-	titleMap := make(map[string]int, 0)
-	for _, val := range p.AnimeList.Data {
-		plainKeyStr := strings.Builder{}
-		formattedKeyStr := strings.Builder{}
+	titleMap := make(map[string]struct {
+		ID  int
+		Idx int
+	}, 0)
+	for idx, val := range p.AnimeList.Data {
+		cacheKey, fzfKey := GenerateUserAnimePreviewKeys(&val.Node)
 
-		// so to not mess with filepath
-		val.Node.Title = strings.ReplaceAll(val.Node.Title, "\\", "-")
-		val.Node.Title = strings.ReplaceAll(val.Node.Title, "/", "-")
-
-		formattedKeyStr.WriteString(val.Node.Title)
-		plainKeyStr.WriteString(val.Node.Title)
-
-		startSeason := val.Node.CustomFields["start_season"]
-		if seasonData, ok := startSeason.(map[string]interface{}); ok {
-			season, _ := seasonData["season"]
-			year, _ := seasonData["year"]
-
-			formattedKeyStr.WriteString("\t")
-			plainKeyStr.WriteString(" ")
-			plainKeyStr.WriteString(fmt.Sprintf("[ %v ~ %v ]", year, season))
-			formattedKeyStr.WriteString(fmt.Sprintf("%s[ %v ~ %v ]%s", colors.Purple, year, season, colors.Reset))
+		titleMap[cacheKey] = struct {
+			ID  int
+			Idx int
+		}{
+			ID:  val.Node.ID,
+			Idx: idx,
 		}
 
-		titleMap[plainKeyStr.String()] = val.Node.ID
-		titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
+		titleList = append(titleList, strings.TrimSpace(fzfKey))
 
-		SaveUserAnimePreviewData(plainKeyStr.String(), val)
+		if err := SaveUserAnimePreviewData(cacheKey, &val); err != nil {
+			fmt.Println(err)
+		}
 	}
 
 	nextListStr := "Next List -->"
@@ -152,7 +140,7 @@ func FzfUserAnimeList(p FzfUserAnimeListParams) (int, error) {
 	previewScript := GenerateAnimePreviewScript()
 	output, err := useFzf(titleList, "search results", previewScript)
 	if err != nil {
-		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
+		return 0, &types.UserAnimeListDataNode{}, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
 
 	selectedTitle := strings.TrimSpace(string(output))
@@ -165,14 +153,14 @@ func FzfUserAnimeList(p FzfUserAnimeListParams) (int, error) {
 	case nextListStr:
 		*(p.Offset) += p.Limit
 	default:
-		animeId, found := titleMap[cleanTitle]
+		stk, found := titleMap[cleanTitle]
 		if !found {
 			fmt.Println("Selected title not found in the map.")
 			panic("Title's shown in the fzf are not correctly mapped to their anime Id's")
 		}
-		return animeId, nil
+		return stk.ID, &p.AnimeList.Data[stk.Idx], nil
 	}
-	return -1, nil
+	return -1, &types.UserAnimeListDataNode{}, nil
 }
 
 type FzfRankingAnimeListParams struct {
@@ -182,26 +170,27 @@ type FzfRankingAnimeListParams struct {
 	RankingType string
 }
 
-func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
+func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, *types.AnimeRankingDataNode, error) {
 
 	titleList := make([]string, 0)
-	titleMap := make(map[string]int, 0)
-	for _, v := range p.AnimeList.Data {
-		val := v.Node
+	titleMap := make(map[string]struct {
+		ID  int
+		Idx int
+	}, 0)
+	for idx, v := range p.AnimeList.Data {
 
-		plainKeyStr := strings.Builder{}
-		formattedKeyStr := strings.Builder{}
+		cacheKey, fzfKey := GenerateRankingAnimePreviewKeys(&v)
 
-		formattedKeyStr.WriteString(val.Title + "\t")
-		plainKeyStr.WriteString(val.Title + " ")
+		titleMap[cacheKey] = struct {
+			ID  int
+			Idx int
+		}{
+			ID:  v.Node.ID,
+			Idx: idx,
+		}
+		titleList = append(titleList, strings.TrimSpace(fzfKey))
 
-		formattedKeyStr.WriteString(fmt.Sprintf("%sRank:%s %s%d%s", colors.Red, colors.Reset, colors.Blue, v.Ranking.Rank, colors.Reset))
-		plainKeyStr.WriteString(fmt.Sprintf("Rank: %d", v.Ranking.Rank))
-
-		titleMap[plainKeyStr.String()] = val.ID
-		titleList = append(titleList, strings.TrimSpace(formattedKeyStr.String()))
-
-		if err := SaveAnimePreviewData(plainKeyStr.String(), val); err != nil {
+		if err := SaveAnimePreviewData(cacheKey, &v.Node); err != nil {
 			fmt.Println(err)
 		}
 	}
@@ -220,7 +209,7 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 	previewScript := GenerateAnimePreviewScript()
 	output, err := useFzf(titleList, p.RankingType, previewScript)
 	if err != nil {
-		return 0, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
+		return 0, &types.AnimeRankingDataNode{}, errors.New(fmt.Sprintf("error using fzf \n %v\n", err))
 	}
 
 	selectedTitle := strings.TrimSpace(string(output))
@@ -233,14 +222,14 @@ func FzfRankingAnimeList(p FzfRankingAnimeListParams) (int, error) {
 	case nextListStr:
 		*(p.Offset) += p.Limit
 	default:
-		animeId, found := titleMap[cleanTitle]
+		stk, found := titleMap[cleanTitle]
 		if !found {
 			fmt.Println("Selected title not found in the map.")
 			panic("Title's shown in the fzf are not correctly mapped to their anime Id's")
 		}
-		return animeId, nil
+		return stk.ID, &p.AnimeList.Data[stk.Idx], nil
 	}
-	return -1, nil
+	return -1, &types.AnimeRankingDataNode{}, nil
 }
 
 func FzfUserMenu(list []string, userD *types.NativeUserDetails) (enums.UserAnimeListStatus, error) {

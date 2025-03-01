@@ -4,7 +4,7 @@ cp ./bin/main.bin ~/.local/share/mal-cli/mal-cli-daemon.bin
 
 mkdir -p ~/.local/bin
 cp ./bin/script.bin ~/.local/bin/mal-cli
-export PATH="$PATH:~/.local/bin"
+echo 'export PATH="$PATH:~/.local/bin"' | cat >> ~/.bashrc
 
 ## dependencies check
 install_fzf() {

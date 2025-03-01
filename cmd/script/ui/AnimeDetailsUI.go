@@ -17,8 +17,11 @@ import (
 	"github.com/rivo/tview"
 )
 
+type AnimeNode interface{} // types.UserAnimeListDataNode | types.AnimeListDataNode | types.AnimeRankingDataNode
+
 type AnimeDetailsUI struct {
 	Details      *types.NativeAnimeDetails
+	ListNode     AnimeNode
 	DetailFields *[]es.AnimeDetailField
 }
 
@@ -660,9 +663,9 @@ func (ui *AnimeDetailsUI) UserAnimeStatusForm(app *tview.Application) *tview.For
 				score = int(animeStatus.Score)
 			}
 			// check if NumWatchedEpisodes is updated
-            if episodesWatched == -1 { // if not updated
-                episodesWatched = int(animeStatus.NumWatchedEpisodes)
-            }
+			if episodesWatched == -1 { // if not updated
+				episodesWatched = int(animeStatus.NumWatchedEpisodes)
+			}
 
 			tmpAnimeStatus := &types.NativeUserAnimeStatus{
 				Status:             enums.UserAnimeListStatus(selectedStatus),
@@ -683,6 +686,13 @@ func (ui *AnimeDetailsUI) UserAnimeStatusForm(app *tview.Application) *tview.For
 				messageView.SetText("[green]Update Successfull!")
 
 				animeStatus = *tmpAnimeStatus
+
+				// Update Anime
+				utils.UpdateUserAnimeStatusCache(u.UpdateAnimeStatusCacheParams{
+					ListNode:    ui.ListNode,
+					AnimeStatus: &animeStatus,
+				})
+
 				updatedAtView.SetText(tmpAnimeStatus.UpdatedAt.Local().String())
 			}
 		}).
@@ -698,6 +708,10 @@ func (ui *AnimeDetailsUI) UserAnimeStatusForm(app *tview.Application) *tview.For
 					messageView.SetText(fmt.Sprintf("[red]Error: %s", err.Error()))
 				} else {
 					messageView.SetText("[green] item deleted successfully")
+					// remove the anime status from cache
+					utils.DeleteUserAnimeStatusCache(u.DeleteUserAnimeStatusCacheParams{
+						ListNode: ui.ListNode,
+					})
 				}
 
 				form.RemoveButton(form.GetButtonIndex("yes"))

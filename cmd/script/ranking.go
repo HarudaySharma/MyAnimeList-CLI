@@ -34,6 +34,7 @@ var rankingCmd = &cobra.Command{
 		}
 
 		var animeList types.NativeAnimeRanking
+		var listNode *types.AnimeRankingDataNode
 		var animeId int = -1 // will send a request to server every time it is "-1"
 
 		detailFields := make([]es.AnimeDetailField, 0)
@@ -59,7 +60,7 @@ var rankingCmd = &cobra.Command{
 					}
 				}
 
-				animeId, err = u.FzfRankingAnimeList(u.FzfRankingAnimeListParams{
+				animeId, listNode, err = u.FzfRankingAnimeList(u.FzfRankingAnimeListParams{
 					AnimeList:   &animeList,
 					Limit:       limit,
 					Offset:      &offset,
@@ -101,6 +102,7 @@ var rankingCmd = &cobra.Command{
 			animeDetailsUI := ui.AnimeDetailsUI{
 				Details:      &animeDetails,
 				DetailFields: &detailFields,
+				ListNode:     listNode,
 			}
 
 			app := ui.NewApplication(&animeDetailsUI)

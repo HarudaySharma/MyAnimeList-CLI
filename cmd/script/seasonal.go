@@ -45,6 +45,7 @@ var seasonalCmd = &cobra.Command{
 		}
 
 		var animeList *types.NativeAnimeList
+		var listNode *types.AnimeListDataNode
 		var animeId int = -1 // will send a request to server every time it is "-1"
 
 		detailFields := make([]es.AnimeDetailField, 0)
@@ -76,7 +77,7 @@ var seasonalCmd = &cobra.Command{
 					animeList = u.SeasonalToNativeAnimeList(&seasonalAnimeList)
 				}
 
-				animeId, err = u.FzfAnimeList(u.FzfAnimeListParams{
+				animeId, listNode, err = u.FzfAnimeList(u.FzfAnimeListParams{
 					AnimeList: animeList,
 					Limit:     limit,
 					Offset:    &offset,
@@ -117,6 +118,7 @@ var seasonalCmd = &cobra.Command{
 			animeDetailsUI := ui.AnimeDetailsUI{
 				Details:      &animeDetails,
 				DetailFields: &detailFields,
+				ListNode:     listNode,
 			}
 
 			app := ui.NewApplication(&animeDetailsUI)
